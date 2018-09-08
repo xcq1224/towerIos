@@ -4,7 +4,7 @@
         <div class="main">
             <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
                 <div v-show="item.title" class="card-title text-ellipsis">{{item.title}}</div>
-                <div v-show="item.content" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
+                <div v-show="item.content && item.contentType != 6" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
                 <div v-if="item.contentType == 2 || item.contentType == 3" class="video-box">
                     <img :src="item.videoImg" class="video-img" alt="">
                     <span class="play-btn iconfont icon-bofang"  @click.stop="openVideo(item.videoUrl, item.videoImg)"></span>

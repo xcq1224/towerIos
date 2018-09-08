@@ -40,7 +40,6 @@
                 </cell>  
             </group>
         </div>
-
     </div>
 </template>
 
@@ -106,10 +105,6 @@
     .main{
         padding-top: 46px;
         background: #fff;
-        .empty-box{
-            height: 10px;
-            background: #f2f2f2;
-        }
         .header .cell{
             padding: 0 15px;
         }
@@ -136,6 +131,9 @@
                 left: 0;
             }
         }
+        .content{
+            background: #fff;
+        }
         .login-box{
             border: 1px solid @baseColor;
             width: 182px;
@@ -146,6 +144,7 @@
             line-height: 40px;
             border-radius: 6px;
         }
+        
     }
 </style>
 

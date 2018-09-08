@@ -1,23 +1,60 @@
 <template>
     <div class="page"> 
-        <x-header :left-options="{backText: ''}">干货</x-header>
+        <x-header :left-options="{backText: ''}"><p @click="popup = true">干货<i class="iconfont icon-xia"></i></p></x-header>
         <div class="main">
-            <div class="employment-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
-                <img :src="item.imgUrl_1" width="118" height="70">
-                <p class="title text-ellipsis">{{item.title}}</p>
-                <p>{{item.name}}</p>
-                <p>{{item.contentKind}}</p>
+            <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(0)"
+                use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
+                lock-x ref="scrollerBottom" height="100%">
+                <div v-show="isEmpty">
+                    <div class="employment-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
+                        <p class="title text-ellipsis">{{item.title}}</p>
+                        <p>{{item.name}}</p>
+                        <p>{{longTime(item.createDate)}}</p>
+                    </div>
+                </div>
+                <div v-show="!isEmpty">
+                    <div style="text-align: center;">暂无数据</div>
+                </div>
+            </scroller>
+        </div>
+        <!-- 筛选 -->
+        <div v-show="popup" class="filter-wrap" @click="popup = false">
+            <div class="filter">
+                <p>
+                    <span>生活</span>
+                    <span>读研</span>
+                    <span>留学</span>
+                    <span>创业</span>
+                    <span>职场</span>
+                </p>
             </div>
         </div>
-
     </div>
 </template>
 
 <script>
     import { Search} from 'vux'
     import { XHeader, Actionsheet, TransferDom, ButtonTab, ButtonTabItem } from 'vux'
-    import { Tab, TabItem, Sticky, Divider, XButton, Swiper, SwiperItem } from 'vux'
-    const list = () => ['热门', '精选', '达人', '干货']
+    import { Tab, TabItem, Sticky, Divider, XButton, Swiper, SwiperItem, Scroller } from 'vux'
+    const pulldownDefaultConfig = {
+        content: '下拉刷新',
+        height: 40,
+        autoRefresh: false,
+        downContent: '下拉刷新',
+        upContent: '释放后刷新',
+        loadingContent: '正在刷新...',
+        clsPrefix: 'xs-plugin-pulldown-'
+    }
+    const pullupDefaultConfig = {
+        content: '加载中...',
+        pullUpHeight: 60,
+        height: 40,
+        autoRefresh: false,
+        downContent: '释放后加载',
+        upContent: '上拉加载更多',
+        loadingContent: '加载中...',
+        clsPrefix: 'xs-plugin-pullup-'
+    }
     export default {
         components: {
             Search,
@@ -32,56 +69,88 @@
             XButton,
             Swiper,
             SwiperItem,
+            Scroller,
         },
         data () {
             return {
-                //  search
-                results: [],
-                value: '',
-
-                //  tab
-                index: 0,
-
-                //  精选
-                subnavIndex: 0,
-                isShow1: false,
-                isShow2: false,
-                isShow1: false,
-                isShow1: false,
-                chosenTop: 0,       //  精选tab的scrollTop高度
-
+                isEmpty: 1,
                 contentList: [],    //  干货内容列表
+                popup: false,
+
+                //  刷新、加载
+                pageNum: 1,
+                barsNum: 10,            //  每页10条
+                pullupDefaultConfig: pullupDefaultConfig,
+                pulldownDefaultConfig: pulldownDefaultConfig,
 
 
             }
         },
+        mounted(){
+            this.refresh()
+        },
         activated(){
             // document.getElementsByClassName('chosen')[0].scrollTop = this.chosenTop
             // this.chosenTop = 0
-            let params = new FormData()
-            this.$post("get_b_test", params, (data) => {
-                this.contentList = data.contentList
-            })
+            // let params = new FormData()
+            // this.$post("get_b_test", params, (data) => {
+            //     this.contentList = data.contentList
+            // })
         },
-        // deactivated(){
-        //     console.log(3);
-        // },
         methods: {
-
+            //  加载数据
+            fetchData(cb) {
+                var that = this
+                setTimeout(() => {
+                    this.$nextTick(() => {
+                        that.$refs.scrollerBottom.reset()
+                    })
+                    cb()
+                }, 200)
+            },
+            //  下拉刷新
+            refresh() {
+                this.fetchData(data => {
+                    this.pageNum = 1
+                    this.$refs.scrollerBottom.donePulldown()
+                    let params = new FormData()
+                    params.append("pageNum", 1)
+                    params.append("barsNum", this.barsNum.toString())
+                    this.$vux.loading.show()
+                    this.$post("get_b_test", params, (data) => {
+                        this.contentList = data.contentList
+                        this.isEmpty = data.contentList.length
+                        if(data.contentList.length == this.barsNum){
+                            this.pageNum = 2
+                            this.$refs.scrollerBottom.donePullup()
+                            this.$refs.scrollerBottom.enablePullup()
+                        }else{
+                            this.$refs.scrollerBottom.disablePullup()
+                        }
+                    })
+                })
+            },
+            //  加载首页数据
+            loadMore(type) {
+                this.fetchData(() => {
+                    let params = new FormData()
+                    params.append("pageNum", this.pageNum)
+                    params.append("barsNum", this.barsNum.toString())
+                    this.$post("get_b_test", params, (data) => {
+                        this.contentList = this.contentList.concat(data.contentList)
+                        this.isEmpty = this.contentList.length
+                        if(data.contentList.length == this.barsNum){
+                            this.pageNum++
+                            this.$refs.scrollerBottom.donePullup()
+                        }else{
+                            this.$refs.scrollerBottom.disablePullup()
+                        }
+                    })
+                })
+            },
         },
     }
 
-    //  search
-    function getResult (val) {
-        let rs = []
-        for (let i = 0; i < 20; i++) {
-            rs.push({
-            title: `${val} result: ${i + 1} `,
-            other: i
-            })
-        }
-        return rs
-    }
 </script>
 
 <style lang="less" scoped>
@@ -138,6 +207,26 @@
                 font-size: 14px;
             }
             line-height: 24px;
+        }
+    }
+    .filter-wrap{
+        position: absolute;
+        top: 0px;
+        left: 0;
+        z-index: 10;
+        height: 100%;
+        width: 100%;
+        .filter{
+            background: #fff;
+            margin-top: 46px;
+            padding-bottom: 20px;
+            box-shadow: 3px 0px 4px #ccc;
+            p{
+                padding: 15px 15px 0;
+                span{
+                    padding: 0 10px;
+                }
+            }
         }
     }
 </style>

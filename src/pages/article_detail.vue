@@ -1,7 +1,7 @@
 <template>
     <div class="page"> 
         <x-header class="pst" :left-options="{backText: ''}" :right-options="{showMore: true}" @on-click-more="sharePage">点滴详情</x-header>
-        <div class="main">
+        <div class="main" v-show="isSuccess">
             <div class="hot-card">
                 <div class="user-info">
                     <img :src="params.iconUrl" width="28" height='28' alt="">{{params.name}}<i class='iconfont icon-zhongfu'></i>
@@ -9,25 +9,7 @@
                     <a v-show="params.follow == 1" @click.stop="no_follow(params.towerUserId)">已关注</a>
                 </div>
                 <div class="card-title">{{params.title}}</div>
-                <div class="card-desc" style="max-height: inherit;">{{params.content}}</div>
-                <div class="video-box"  v-if="params.videoUrl" @click="openVideo(params.videoUrl, params.videoImg)">
-                    <img class="video-img" :src="params.videoImg" alt="">
-                    <span class="play-btn"><i class="iconfont icon-bofang" style="font-size: 30px;"></i></span>
-                </div>
-                <!-- 图片 -->
-                <div v-if="params.imgUrls.length" class="thumbnail-box">
-                    <div v-if="params.imgUrls.length > 1" class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
-                        v-for="(imgItem, imgIndex) in params.imgUrls" :key="imgIndex" @click.stop="viewPicture(params.imgUrls, imgIndex)"></div>
-                    <div v-if="params.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(params.imgUrls, 0)">
-                        <img :src="params.imgUrls[0]" alt="">
-                    </div>
-                </div>
-                <div>
-                    {{params.position}}
-                    <img class="fr" v-if="params.scene != '0' && params.scene" :src="'/static/scene' + params.scene + '.png'" width="20"/>
-                    <img class="fr" v-if="params.weather != '0' && params.weather" :src="'/static/weather' + params.weather + '.png'" width="20"/>
-                    <img class="fr" v-if="params.mood != '0' && params.mood" :src="'/static/mood' + params.mood + '.png'" width="20"/>
-                </div>
+                <div class="card-desc article-desc-content" style="max-height: inherit;" ref="content"></div>
                 <div class="handle">{{longTime(params.createDate)}}
                     <i v-show="params.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(params.towerContentId)"></i>
                     <i v-show="params.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(params.towerContentId)"></i>
@@ -91,12 +73,14 @@
                 query: {},      //  页面get参数
                 params: {},     //  内容详细信息
                 commentList: {},     //  评论列表
+
+                isSuccess: false,   //  是否加载完
             }
         },
         activated(){
             this.query = this.$router.currentRoute.query
             if (this.query.status == '1') this.showPop = true
-
+            
             //  获取详情数据
             this.getDetail()
         },
@@ -113,9 +97,16 @@
             getDetail(){
                 let params = new FormData()
                 params.append("towerContentId", this.query.id)
+                this.isSuccess = false
+                this.$vux.loading.show()
                 this.$post("getcontentbyid", params, (data) => {
+                    this.isSuccess = true
                     this.params = data.content
                     this.commentList = data.commentList
+                    let content = data.content.content
+                    content = content.replace(/&lt;/g, "<")
+                    content = content.replace(/&gt;/g, ">")
+                    this.$refs.content.innerHTML = content
                 })
             },
             // 显示评论弹框
@@ -262,6 +253,8 @@
             .card-title{
                 font-weight: bold;
                 padding-bottom: 3px;
+                text-align: center;
+                font-size: 16px;
             }
             .card-desc{
                 box-sizing: border-box;
@@ -386,5 +379,11 @@
         line-height: 30px;
     }
 </style>
+<style lang="less">
+    .article-desc-content img{
+        max-width: 100%;
+    }
+</style>
+
 
 

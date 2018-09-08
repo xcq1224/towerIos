@@ -145,6 +145,8 @@ export default {
     //  关闭图片弹框
     closePictire(){
         this.$store.state.showPicture = false
+        this.$store.state.pictureList = []
+        this.$store.state.pictureIndex = 0
     },
   },
 }

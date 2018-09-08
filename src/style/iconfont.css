@@ -46,6 +46,8 @@
 
 .icon-2:before { content: "\e680"; }
 
+.icon-shanchu:before { content: "\e63a"; }
+
 .icon-xiangji:before { content: "\e6c4"; }
 
 .icon-ego-heart:before { content: "\e607"; }
@@ -119,6 +121,8 @@
 .icon-web-icon-1:before { content: "\e6e8"; }
 
 .icon-zan:before { content: "\e640"; }
+
+.icon-icon-1:before { content: "\e64b"; }
 
 .icon-shichang:before { content: "\e641"; }
 

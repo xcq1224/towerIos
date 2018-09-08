@@ -2,7 +2,7 @@
     <div class="has-tabbar page"> 
         <x-header class="pst" :left-options="{backText: ''}">文章</x-header>
         <div class="main">
-            <img src="../assets/picture5.jpg" alt="">
+            <img src="/static/picture5.jpg" alt="">
             <p style="border-top: 1px solid #eee; padding-bottom: 10px;"></p>
             <p>联系电话：18071737857</p>
             <p>QQ：1127414115</p>

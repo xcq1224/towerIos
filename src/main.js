@@ -13,6 +13,9 @@ import Bridge from './config/bridge.js'
 //  定位
 import "./js/geolocation.min"
 
+//  富文本编辑器
+import initRichText from './js/edit';  
+initRichText();
 //  video.js
 require('video.js/dist/video-js.css')
 require('vue-video-player/src/custom-theme.css')
@@ -95,6 +98,16 @@ Vue.prototype.share = function(title, descr, thumbImage, webpageUrl){
     }
     window.webkit.messageHandlers.share.postMessage(params);
 }
+//  分享
+Vue.prototype.shareResume = function(title, descr, thumbImage, webpageUrl){
+    let params = {
+        "title": title || '塔兮',
+        "descr": descr || '',
+        "thumbImage": 'http://web.towerxi.com/apk/towerx.png',
+        "webpageUrl": 'http://ios.towerxi.com/share_resume?id' + webpageUrl
+    }
+    window.webkit.messageHandlers.share.postMessage(params);
+}
 
 //  跳转页面
 Vue.prototype.goTo = function(url){
@@ -153,7 +166,11 @@ Vue.prototype.toDetail = function(id, type, status){
     // }else{
     //     this.$router.push('./bit_detail?id=' + id + str)
     // }
-    this.$router.push('./bit_detail?id=' + id + str)
+    if(type == 6){
+        this.$router.push('./article_detail?id=' + id + str)
+    }else{
+        this.$router.push('./bit_detail?id=' + id + str)
+    }
 },
 //  跳转到个人主页
 Vue.prototype.toHomepage = function(id){

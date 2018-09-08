@@ -11,11 +11,11 @@
         </div> -->
         <tab class="pst" :line-width=2 custom-bar-width="50%" v-model="skillType">
             <tab-item class="vux-center" :selected="skillType == 0" @click.native="slideTo(0)">小课</tab-item>
-            <tab-item class="vux-center" :selected="skillType == 1" @click.native="slideTo(1)">服务</tab-item>
+            <tab-item class="vux-center" :selected="skillType == 1" @click.native="slideTo(1)">服务<i class="iconfont icon-xia"></i></tab-item>
             <tab-item class="vux-center" :selected="skillType == 2" @click.native="slideTo(2)">需求</tab-item>
         </tab>
         <div class="main">
-            <swiper v-model="skillType" ref="mySwiper" :show-dots="false" style="height: 100%;">
+            <swiper v-model="skillType" ref="mySwiper" :show-dots="false" style="height: 100%;" @slideChange="changeTab">
                 <swiper-slide>
                     <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(0)"
                         use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
@@ -68,6 +68,14 @@
                     </scroller>
                 </swiper-slide>
             </swiper>
+        </div>
+        <!-- 筛选 -->
+        <div v-show="popup1" class="filter-wrap" @click="popup1 = false">
+            <div class="filter">
+                <p>
+                    <span :class="item.skillCategoryId == skillCategoryId ? 'text-base' : ''" @click="filterSkillList(item.skillCategoryId)" v-for="(item, index) in skillCategorys" :key="index">{{item.skillCategoryName}}</span>&nbsp;
+                </p>
+            </div>
         </div>
     </div>
 </template>
@@ -130,6 +138,10 @@
                 //  刷新、加载
                 pullupDefaultConfig: pullupDefaultConfig,
                 pulldownDefaultConfig: pulldownDefaultConfig,
+
+                popup1: false,
+                skillCategorys: [],
+                skillCategoryId: '',
             }
         },
         mounted(){
@@ -141,16 +153,29 @@
             this.getSkillList(0,0)
             this.getSkillList(1,0)
             this.getSkillList(2,0)
+            this.getSkillCategorys()
         },
         activated(){
             
         },
         methods: {
-            getSkillList(skillType, pageNum){
+            //  筛选
+            filterSkillList(skillCategoryId){
+                this.skillCategoryId = skillCategoryId
+                this.refresh(1)
+            },
+            //  切换tab
+            changeTab(){
+                this.skillType = this.$refs.mySwiper.swiper.activeIndex
+            },
+            getSkillList(skillType, pageNum, skillCategoryId){
                 let params = new FormData()
                 params.append("skillType", skillType)
                 params.append("pageNum", pageNum)
                 params.append("barsNum", this.barsNum.toString())
+                if(skillType == 1 && skillCategoryId){
+                    params.append("skillCategoryId", skillCategoryId)
+                }
                 this.$post("getskilllist", params, (data) => {
                     this['skillList' + skillType] = this['skillList' + skillType].concat(data.skillList)
                     this['isEmpty' + skillType] = this['skillList' + skillType].length
@@ -170,6 +195,14 @@
             slideTo(index){
                 this.skillType = index
                 this.$refs.mySwiper.swiper.slideTo(index)
+                this.popup1 = index == 1
+            },
+
+            getSkillCategorys(){
+                let params = new FormData()
+                this.$post("getskillcategory", params, (data) => {
+                    this.skillCategorys = data.skillCategorys
+                })
             },
 
             //  加载数据
@@ -189,6 +222,9 @@
                     this.$refs['scrollerBottom' + type].donePulldown()
                     let params = new FormData()
                     params.append("skillType", type)
+                    if(type == 1 && this.skillCategoryId){
+                        params.append("skillCategoryId", this.skillCategoryId)
+                    }
                     params.append("pageNum", 1)
                     params.append("barsNum", this.barsNum.toString())
                     this.$post("getskilllist", params, (data) => {
@@ -207,39 +243,7 @@
             //  加载首页数据
             loadMore(type) {
                 this.fetchData(() => {
-                    
-                    this.getSkillList(type, this['pageNum' + type])
-
-                    // this.skillType = type
-                    // let params = new FormData()
-                    // params.append("skillType", type)
-                    // params.append("pageNum", this['pageNum' + type])
-                    // this.$post("getskilllist", params, (data) => {
-                    //     this['skillList' + type] = this['skillList' + type].concat(data.skillList)
-                    //     if(data.skillList.length == 10){
-                    //         this['pageNum' + type] = 1
-                    //         this.$refs['scrollerBottom' + type].donePullup()
-                    //     }else{
-                    //         this.$refs['scrollerBottom' + type].disablePullup()
-                    //     }
-                    // })
-
-                    // let params = new FormData()
-                    // params.append("keyword", this.value)
-                    // params.append("pageNum", this.pageNum)
-                    // this.$post("getcontentlist", params, (data) => {
-                    //     data.contentList.map(item => {
-                    //         item['isError'] = false
-                    //         this.contentShowList.push(item)
-                    //     })
-                    //     // this.contentShowList = this.contentShowList.concat(data.contentList)
-                    //     if(data.contentList.length == 10){
-                    //         this.pageNum += 1
-                    //         this.$refs.scrollerBottom.donePullup()
-                    //     }else{
-                    //         this.$refs.scrollerBottom.disablePullup()
-                    //     }
-                    // })
+                    this.getSkillList(type, this['pageNum' + type], this.skillCategoryId)
                 })
             },
         },
@@ -313,6 +317,25 @@
                 color: #f00;
                 margin-right: 18px;
                 font-weight: bold;
+            }
+        }
+    }
+    .filter-wrap{
+        position: absolute;
+        top: 0px;
+        left: 0;
+        z-index: 10;
+        height: 100%;
+        width: 100%;
+        .filter{
+            background: #fff;
+            margin-top: 90px;
+            padding-bottom: 20px;
+            p{
+                padding: 15px 15px 0;
+                span{
+                    padding: 0 5px;
+                }
             }
         }
     }

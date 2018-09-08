@@ -34,13 +34,14 @@
                     <p class="title"><i class="iconfont icon-remen"></i>热门</p>
                     <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentShowList" :key="index">
                         <!-- 用户信息 -->
-                        <div class="user-info">
-                            <span @click.stop="toHomepage(item.towerUserId)"><img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}<i class='iconfont icon-zhongfu'></i></span>
-                            <a v-show="item.follow != 1" class="active" @click.stop="follow(item.towerUserId, index)">+关注</a>
-                            <a v-show="item.follow == 1" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
+                        <div class="user-info" @click.stop="toHomepage(item.towerUserId)">
+                            <span><img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}<i class='iconfont icon-zhongfu'></i></span>
+                            <!-- <a v-show="item.follow != 1" class="active" @click.stop="follow(item.towerUserId, index)">+关注</a> -->
+                            <!-- <a v-show="item.follow == 1" @click.stop="no_follow(item.towerUserId, index)">已关注</a> -->
+                            <a v-show="item.follow == 1" class="active" style="width:64px;">认识一下</a>
                         </div>
                         <div v-show="item.title" class="card-title text-ellipsis" style="margin-left: 40px;">{{item.title}}</div>
-                        <div v-show="item.content" style="margin-left: 40px; margin-bottom: 5px;" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
+                        <div v-show="item.content && item.contentType != 6" style="margin-left: 40px; margin-bottom: 5px;" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
                         <!-- 视频 -->
                         <div v-if="item.contentType == 2 || item.contentType == 3" class="video-box">
                             <img :src="item.videoImg" class="video-img" alt="">
@@ -54,6 +55,12 @@
                             <div v-if="item.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(item.imgUrls, 0)">
                                 <img :src="item.imgUrls[0]" alt="">
                             </div>
+                        </div>
+                        <div style="overflow: hidden;">
+                            {{item.position}}
+                            <img class="fr" v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="20"/>
+                            <img class="fr" v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="20"/>
+                            <img class="fr" v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="20"/>
                         </div>
                         <!-- 收藏、点赞、评论操作 -->
                         <div class="handle">{{longTime(item.createDate)}}

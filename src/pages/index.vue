@@ -58,11 +58,11 @@
                     <!-- <div @click="publishCourse(0)">
                         <span style="background: #cc66cc;"><i class="iconfont icon-kecheng-"></i></span>
                         <p>小课</p>
-                    </div>
-                    <div @click="publishCourse(1)">
+                    </div> -->
+                    <div @click="goTo('./publish_article')">
                         <span style="background: #cc66cc;"><i class="iconfont icon-kecheng-"></i></span>
                         <p>文章</p>
-                    </div> -->
+                    </div>
                     <p class="copyText" v-show="false" ref="copy" data-clipboard-text="yunshangtaxi@163.com" @click="copy"></p>
                 </div>
                 <div class="more-handle-footer">
@@ -71,7 +71,7 @@
             </div>
         </popup>
         <!--发布文字、图片-->
-        <popup v-model="show1" height="100%" @on-show="openShow1" @on-hide="closeShow1">
+        <popup v-model="show1" height="100%" @on-show="openShow1" @on-hide="closeShow1" @click.native="tagIndex = 0">
             <div class="main">
                 <div class="header">
                     <span @click="show1=false">取消</span>
@@ -97,8 +97,39 @@
             </div>
             <div class="footer">
                 <div>
-                    <span @click="geolocation" v-show="!address" class="text-base"><i class="iconfont icon-dingwei"></i>你在哪里</span>
-                    <span v-show="address"><i class="iconfont icon-dingwei"></i>{{address}}</span>
+                    <div class="tag-content">
+                        <div slot="content" class="tagBox" v-show="tagIndex == 1">
+                            <img src="/static/mood1.png" alt="" @click="mood = '1'">
+                            <img src="/static/mood2.png" alt="" @click="mood = '2'">
+                            <img src="/static/mood3.png" alt="" @click="mood = '3'">
+                            <img src="/static/mood4.png" alt="" @click="mood = '4'">
+                            <img src="/static/mood5.png" alt="" @click="mood = '5'">
+                            <img src="/static/mood6.png" alt="" @click="mood = '6'">
+                        </div>
+                        <div slot="content" class="tagBox" v-show="tagIndex == 2">
+                            <img src="/static/weather1.png" alt="" @click="weather = '1'">
+                            <img src="/static/weather2.png" alt="" @click="weather = '2'">
+                            <img src="/static/weather3.png" alt="" @click="weather = '3'">
+                            <img src="/static/weather4.png" alt="" @click="weather = '4'">
+                            <img src="/static/weather5.png" alt="" @click="weather = '5'">
+                            <img src="/static/weather6.png" alt="" @click="weather = '6'">
+                        </div>
+                        <div slot="content" class="tagBox" v-show="tagIndex == 3">
+                            <img src="/static/scene1.png" alt="" @click="scene = '1'">
+                            <img src="/static/scene2.png" alt="" @click="scene = '2'">
+                            <img src="/static/scene3.png" alt="" @click="scene = '3'">
+                            <img src="/static/scene4.png" alt="" @click="scene = '4'">
+                            <img src="/static/scene5.png" alt="" @click="scene = '5'">
+                            <img src="/static/scene6.png" alt="" @click="scene = '6'">
+                        </div>
+                        <a @click.stop="tagIndex = 1"><span v-if="mood == '0'"> 心情 </span><img v-if="mood != '0'" :src="'/static/mood' + mood + '.png'" alt=""></a>|
+                        <a @click.stop="tagIndex = 2"><span v-if="weather == '0'"> 天气 </span><img v-if="weather != '0'" :src="'/static/weather' + weather + '.png'" alt=""></a>|
+                        <a @click.stop="tagIndex = 3"><span v-if="scene == '0'"> 场景 </span><img v-if="scene != '0'" :src="'/static/scene' + scene + '.png'" alt=""></a>
+                    </div>
+                </div>
+                <div>
+                    <span @click="geolocation" v-show="!position" class="text-base"><i class="iconfont icon-dingwei"></i>你在哪里</span>
+                    <span v-show="position"><i class="iconfont icon-dingwei"></i>{{position}}</span>
                     <popover placement="top" class="fr" :gutter='0'>
                         <div slot="content" class="search-tab-items">
                             <p v-show="index != searchIndex" :class="index == searchIndex?'active': ''" v-for="(item, index) in searchTabs" :key="index" @click="searchChoose(index)">{{searchTabs[index]}}</p>
@@ -217,7 +248,14 @@ export default {
 
                 //  定位
                 options : {timeout: 8000},          //  定位超时
-                address: '',                        //  地址
+                position: '',                        //  地址
+                tagIndex: 0,                        //  选择标签分类
+                mood: '0',                            //  心情
+                weather: '0',                         //  天气
+                scene:'0',                           //  场景
+                longitude: '',                      //  经度
+                latitude: '',                       //  维度
+
             }
     },
     methods: {
@@ -323,15 +361,20 @@ export default {
         uploadPicture(e){
             var that = this;
             const files = e.target.files;
+            let n = this.files.length
+            let flag = false
             for(let i=0; i<files.length; i++){
-                canvasDataURL(this.getUrl(files[i]), {}, (baseUrl) => {
-                    that.files.push(baseUrl)
-                    if(that.files.length>9){
-                        that.files.pop()
-                        that.$vux.alert.show({
-                            content: '最多上传9张图片！',
-                        })
-                    }
+                if(i>= 9-n){
+                    flag = true
+                    break
+                }
+                canvasDataURL(this.getUrl(files[i]), i, {}, (baseUrl, m) => {
+                    that.files.splice(m + n, 0, baseUrl)
+                })
+            }
+            if(flag){
+                this.$vux.alert.show({
+                    content: '最多上传9张图片！',
                 })
             }
             e.target.value = ''
@@ -351,6 +394,13 @@ export default {
         //  打开发布文字弹框（文本框聚焦）
         openShow1(){
             this.showMore = false
+            this.position = ''
+            this.tagIndex = 0
+            this.mood = '0'
+            this.weather ='0'
+            this.scene = '0'
+            this.longitude = ''
+            this.latitude = ''
             let that = this
             setTimeout(function(){
                 that.$refs.textarea.focus()
@@ -382,6 +432,12 @@ export default {
                 params.append('contentStatus ', this.searchIndex)
                 params.append('dribKindName', this.className)
                 params.append('contentType', contentType)
+                params.append('mood', this.mood)
+                params.append('weather', this.weather)
+                params.append('scene', this.scene)
+                params.append('position', this.position)
+                params.append('longitude', this.longitude)
+                params.append('latitude', this.latitude)
                 this.$vux.loading.show({
                     text: '发布中...'
                 })
@@ -432,8 +488,7 @@ export default {
                 })
             }
         },
-
-
+    /****************************技能************************* */
         //  关闭发布技能弹框
         closeShow4(){
             this.textarea = ''
@@ -487,7 +542,10 @@ export default {
                 geolocation.getLocation(this.showPosition, this.showErr, this.options)
             },
             showPosition(position) {
+                this.longitude = position.lng
+                this.latitude = position.lat
                 var latlon = position.lat + "," + position.lng;
+                //  google地图定位
                 var url = 'http://maps.google.cn/maps/api/geocode/json?latlng='+latlon+'&language=CN';
                 this.$axios({
                     method:"GET",
@@ -496,7 +554,7 @@ export default {
                 }).then(json => {
                     this.$vux.loading.hide()
                     if(json.data.status=='OK'){
-                        this.address = json.data.results[0].formatted_address;
+                        this.position = json.data.results[0].formatted_address;
                     }else{
                         this.toastFail("定位失败")
                     }
@@ -505,13 +563,33 @@ export default {
                         this.toastFail('网络异常，请稍后再试', '200px')
                     }
                 )
+            
+                //  百度地图定位
+                // var url = "http://api.map.baidu.com/geocoder/v2/?ak=C93b5178d7a8ebdb830b9b557abce78b&callback=renderReverse&location="+latlon+"&output=json&pois=0";
+                // this.$axios({
+                //     method:"GET",
+                //     dataType: "jsonp", 
+                //     url:url,
+                //     withCredentials: false,
+                // }).then(json => {
+                //     this.$vux.loading.hide()
+                //     if(json.status == 0){
+                //         this.position = json.result.formatted_address;
+                //     }else{
+                //         this.toastFail("定位失败")
+                //     }
+                // }).catch(res=>{
+                //         this.$vux.loading.hide()
+                //         this.toastFail('网络异常，请稍后再试', '200px')
+                //     }
+                // )
             },
             showErr(){
                 this.toastFail("定位失败")
             },
     }  
 }
-function canvasDataURL(path, obj, callback){
+function canvasDataURL(path, i, obj, callback){
     var img = new Image();
     img.src = path;
     img.onload = function(){
@@ -522,7 +600,7 @@ function canvasDataURL(path, obj, callback){
             scale = w / h;
         w = obj.width || w;
         h = obj.height || (w / scale);
-        var quality = 0.3; 
+        var quality = 0.1; 
         //生成canvas
         var canvas = document.createElement('canvas');
         var ctx = canvas.getContext('2d');
@@ -541,7 +619,7 @@ function canvasDataURL(path, obj, callback){
         // quality值越小，所绘制出的图像越模糊
         var base64 = canvas.toDataURL('image/jpeg', quality);
         // 回调函数返回base64的值
-        callback(base64);
+        callback(base64, i);
     }
 }
 </script>
@@ -633,8 +711,24 @@ function canvasDataURL(path, obj, callback){
             }
         }
     }
-
-
+    .tag-content{
+        position: relative;
+        .tagBox{
+            position: absolute;
+            top: -40px;
+            img{
+                width: 40px;
+                height: 40px;
+            }
+        }
+        a{
+            img{
+                width: 30px;
+                height: 30px;
+                vertical-align: middle;
+            }
+        }
+    }
     .main{
         background: #fff;
         .header{

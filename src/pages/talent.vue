@@ -55,6 +55,7 @@
             }
         },
         activated(){
+            this.$vux.loading.show()
             this.getgreatmanlist(this.greatManType)
         },
         methods: {

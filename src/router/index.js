@@ -4,6 +4,9 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 const share = r => require.ensure([], () => r(require('@/pages/share')), 'share');
+//  我的简历
+const resume = r => require.ensure([], () => r(require('@/pages/resume')), 'resume');
+const share_resume = r => require.ensure([], () => r(require('@/pages/share_resume')), 'share_resume');
 const download = r => require.ensure([], () => r(require('@/pages/download')), 'download');
 const login = r => require.ensure([], () => r(require('@/pages/login')), 'login');
 const index = r => require.ensure([], () => r(require('@/pages/index')), 'index');
@@ -94,9 +97,21 @@ const bit_manage = r => require.ensure([], () => r(require('@/pages/bit_manage')
 const smallClass = r => require.ensure([], () => r(require('@/pages/smallClass')), 'smallClass');
 //  发布文章
 const article = r => require.ensure([], () => r(require('@/pages/article')), 'article');
+//  发布文章
+const publish_article = r => require.ensure([], () => r(require('@/pages/publish_article')), 'publish_article');
+//  文章详情
+const article_detail = r => require.ensure([], () => r(require('@/pages/article_detail')), 'article_detail');
 
 const routes = [
   {
+    path: '/share_resume',
+    name: 'share_resume',
+    component: share_resume
+  },{
+    path: '/resume',
+    name: 'resume',
+		component: resume
+	},{
     path: '/share',
     name: 'share',
 		component: share
@@ -248,6 +263,14 @@ const routes = [
     path: '/article',
     name: 'article',
 		component: article
+	},{
+    path: '/publish_article',
+    name: 'publish_article',
+		component: publish_article
+	},{
+    path: '/article_detail',
+    name: 'article_detail',
+		component: article_detail
 	},{
     path: '/index',
     name: '',

@@ -3,7 +3,7 @@
         <x-header class="pst" :left-options="{backText: ''}">确认订单</x-header>
         <div class="main">
             <div class="user-info">
-                <img :src="params.iconUrl" width="28" height='28' alt="">&nbsp;&nbsp;{{params.name}}&nbsp;<i class='iconfont icon-zhongfu'></i>
+                <img :src="params.imgUrls[0]" width="28" height='28' alt="">&nbsp;&nbsp;{{params.name}}&nbsp;<i class='iconfont icon-zhongfu'></i>
             </div>
             <div class="card">
                 <img :src="params.imgUrl_1" width="118" height="70">

@@ -21,7 +21,7 @@
                             <span @click.stop="toHomepage(item.towerUserId)"><img :src="item.iconUrl || '../assets/avatar.png'" width="28" height='28' alt="">{{item.name}}<i class='iconfont icon-zhongfu'></i></span>
                         </div>
                         <div v-show="item.title" class="card-title text-ellipsis">{{item.title}}</div>
-                        <div v-show="item.content" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
+                        <div v-show="item.content && item.contentType != 6" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
                         <!-- 视频 -->
                         <div v-if="item.contentType == 2 || item.contentType == 3" class="video-box">
                             <img class="video-img" :src="item.videoImg" alt="">
@@ -34,6 +34,12 @@
                             <div v-if="item.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(item.imgUrls, 0)">
                                 <img :src="item.imgUrls[0]" alt="">
                             </div>
+                        </div>
+                        <div style="overflow: hidden;">
+                            {{item.position}}
+                            <img class="fr" v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="20"/>
+                            <img class="fr" v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="20"/>
+                            <img class="fr" v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="20"/>
                         </div>
                         <!-- 收藏、点赞、评论操作 -->
                         <div class="handle">{{longTime(item.createDate)}}
