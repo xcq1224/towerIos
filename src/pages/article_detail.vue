@@ -103,10 +103,7 @@
                     this.isSuccess = true
                     this.params = data.content
                     this.commentList = data.commentList
-                    let content = data.content.content
-                    content = content.replace(/&lt;/g, "<")
-                    content = content.replace(/&gt;/g, ">")
-                    this.$refs.content.innerHTML = content
+                    this.getFormatContent(data.content.content)
                 })
             },
             // 显示评论弹框
@@ -155,7 +152,7 @@
                 let params = new FormData()
                 console.log(id)
                 params.append('towerUserId_fans', id)
-                this.post("http://106.14.7.242:8080/tower/app/account!follow.action", params, (data) => {
+                this.$post("follow", params, (data) => {
                     this.params.follow = '1'
                 })
             },
@@ -164,7 +161,7 @@
                 let params = new FormData()
                 console.log(id)
                 params.append('towerUserId_fans', id)
-                this.post("http://106.14.7.242:8080/tower/app/account!no_follow.action", params, (data) => {
+                this.$post("no_follow", params, (data) => {
                     this.params.follow = '0'
                 })
             },
@@ -262,6 +259,7 @@
                 padding: 0px 0;
                 line-height: 20px;
                 padding-bottom: 2px;
+                word-break: break-all;
             }
             .handle{
                 color: #ccc;
@@ -377,11 +375,6 @@
     .empty-comment{
         text-align: center;
         line-height: 30px;
-    }
-</style>
-<style lang="less">
-    .article-desc-content img{
-        max-width: 100%;
     }
 </style>
 

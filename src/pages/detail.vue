@@ -1,10 +1,10 @@
 <template>
     <div class="page"> 
-        <x-header :left-options="{backText: ''}">市场<span slot="right"><i class="iconfont icon-ego-heart"></i><i class="iconfont icon-dianzan1"></i></span></x-header>
+        <x-header class="pst" :left-options="{backText: ''}" :right-options="{showMore: true}" @on-click-more="sharePage">{{query.type == 0 ? '小课' : '需求'}}</x-header>
         <div class="main">
-            <div class="video-box" @click="openVideo(params.videoUrl, params.videoImg)" style="margin-top: 0; border-bottom: 1px solid #ddd;">
-                <img class="video-img" :src="params.videoImg" alt="">
-                <span class="play-btn"><i class="iconfont icon-bofang" style="font-size: 30px;"></i></span>
+            <div class="video-box" @click="isOpenVideo(params.videoUrl, params.videoImg)" style="margin-top: 0; border-bottom: 1px solid #ddd;" :style="{backgroundImage: 'url(' + params.videoImg + ')' }">
+                <!-- <img class="video-img" :src="params.videoImg" alt="" @click.stop="viewPicture(params.imgUrls, 0)"> -->
+                <span class="play-btn"><i class="iconfont icon-bofang" style="font-size: 30px;position: relative;left: 2px;"></i></span>
             </div>
             <tab :line-width=2 v-model="index" custom-bar-width="40%">
                 <tab-item class="vux-center" :selected="index == 0" @click="index = 0">介绍</tab-item>
@@ -12,9 +12,11 @@
             </tab>
             <swiper v-model="index" :show-dots="false" height="100%">
                 <swiper-item class="item-desc">
-                    <div class="desc-info">
+                    <div class="desc-info" :class="params.buy == 1 ? '' : 'mb50'">
                         <p class="title">{{params.title}}</p>
-                        <p class="price">￥35.00
+                        <p class="price" style="overflow: hidden;">
+                            <span v-show="params.price" v-if="params.buy != 1">{{params.price}}塔兮币</span>
+                            <span v-show="params.price" v-if="params.buy == 1">已购买</span>
                             <i v-show="params.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(params.towerContentId)"></i>
                             <i v-show="params.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(params.towerContentId)"></i>
                             <i v-show="params.collection != 1" class="iconfont icon-ego-heart" @click.stop="collection(params.towerContentId)"></i>
@@ -26,36 +28,35 @@
                             <a v-show="params.follow == 1" @click.stop="no_follow(params.towerUserId)">已关注</a>
                         </div>
                         <div class="desc">
-                            <p>课程介绍</p>
-                            <p style="color: #777;">课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍课程介绍</p>
-                            <p>购买须知<br/>该课程为付费系列课程，按课程计划定时更新，每节课程可在开课时学习，也可以反复回放。</p>
-                            <p>该课程为虚拟内容服务，购买成功后盖不支持退款。</p>
-                            <p>版权归作者所有，严禁翻录可侵权，违者将追究法律责任。</p>
-                            <p>如有疑问，可点击下方咨询。</p>
+                            <p>{{query.type == 0 ? '小课介绍' : '需求介绍'}}</p>
+                            <p style="color: #777;">{{params.content}}</p>
+                            <!-- <p>如有疑问，可点击下方咨询。</p> -->
                         </div>
                     </div>
                 </swiper-item>
                 <swiper-item class="item-comment">
-                    <div class="comment-card" v-for="(item, index) in commentList" :key="index">
-                        <div class="title">
-                            <img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}
-                            <span>{{formatDate(item.date, 'yyyy-MM-dd hh:mm:ss')}}</span>
+                    <div class="mb50">
+                        <div class="comment-card" v-for="(item, index) in commentList" :key="index">
+                            <div class="title">
+                                <img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}
+                                <span>{{formatDate(item.date, 'yyyy-MM-dd hh:mm:ss')}}</span>
+                            </div>
+                            <p>{{item.comment}}</p>
                         </div>
-                        <p>{{item.comment}}</p>
-                    </div>
-                    <div class="empty-comment" v-if="!commentList[0]">
-                        <i class="iconfont icon-empty"></i>
-                        <p>暂无评论</p>
+                        <div class="empty-comment" v-if="!commentList[0]">
+                            <i class="iconfont icon-empty"></i>
+                            <p>暂无评论</p>
+                        </div>
                     </div>
                 </swiper-item>
             </swiper>
         </div>
-        <div class="footer" v-show="!index">
-            <router-link class="footer-left" to="./advisory">
+        <div class="footer" v-show="!index" v-if="params.buy != 1">
+            <!-- <router-link class="footer-left" to="./advisory">
                 <i class="iconfont icon-zixun"></i>
                 <p>咨询</p>
-            </router-link>
-            <router-link to="./confirm_order" class="footer-right">加入学习</router-link>
+            </router-link> -->
+            <router-link :to="'./confirm_order?id=' + query.id" class="footer-right">小课服务</router-link>
         </div>
         <div class="footer" v-show="index" @click="toSend">
             <div class="footer-right">评论</div>
@@ -113,6 +114,23 @@
             // this.getcomment()
         },
         methods: {
+            //  是否可以播放
+            isOpenVideo(videoUrl, videoImg){
+                if(this.params.buy == '1'){
+                    this.openVideo(videoUrl, videoImg)
+                }else{
+                    this.toastFail("请先购买！", '200px')
+                }
+            },
+            //  转发
+            sharePage(){
+                let title = this.params.title
+                let descr = this.params.content
+                let thumbImage = this.params.imgUrls[0]
+                let webpageUrl = this.params.towerContentId
+                this.share(title, descr, thumbImage, webpageUrl)
+            },
+
             //  获取详情数据
             getDetail(){
                 let params = new FormData()
@@ -241,10 +259,13 @@
             margin-left: 10px;
         }
     }
+    .mb50{
+        margin-bottom: 50px;
+    }
     .main{
         position: absolute;
         top: 0;
-        padding: 46px 0;
+        padding: 46px 0 0;
         height: 100%;
         width: 100%;
         box-sizing: border-box;
@@ -258,6 +279,11 @@
         .vux-swiper-item{
             overflow: auto;
         }
+    }
+    .video-box{
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
     }
     .item-desc{
         .desc-info{

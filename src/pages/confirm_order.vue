@@ -3,24 +3,24 @@
         <x-header class="pst" :left-options="{backText: ''}">确认订单</x-header>
         <div class="main">
             <div class="user-info">
-                <img :src="params.imgUrls[0]" width="28" height='28' alt="">&nbsp;&nbsp;{{params.name}}&nbsp;<i class='iconfont icon-zhongfu'></i>
+                <img :src="params.iconUrl" width="28" height='28' alt="">&nbsp;&nbsp;{{params.name}}&nbsp;<i class='iconfont icon-zhongfu'></i>
             </div>
             <div class="card">
-                <img :src="params.imgUrl_1" width="118" height="70">
+                <img :src="params.videoImg" width="118" height="70">
                 <p class="title">{{params.title}}</p>
                 <p>永久有效</p>
-                <p><span class="price">￥{{params.price}}</span></p>
+                <p><span class="price">{{params.price}}塔兮币</span></p>
             </div>
-            <div class="total">总计：￥{{params.price}}</div>
-            <p class="pay-title">选择支付方式</p>
+            <div class="total">总计：{{params.price}}塔兮币</div>
+            <!-- <p class="pay-title">选择支付方式</p>
             <div class="pay-item">
                 <p><img src="../assets/alipay.png" height="60" alt=""></p>
                 <span v-show="payIndex != 1"><i class="weui-icon weui_icon_circle weui-icon-circle"></i></span>
                 <span v-show="payIndex == 1"><i class="weui-icon weui_icon_success weui-icon-success" style="color: #f25f30;"></i></span>
-            </div>
+            </div> -->
         </div>
         <div class="footer">
-            <div class="footer-left">实付金额：<span>￥{{params.price}}</span></div>
+            <div class="footer-left">实付金额：<span>{{params.price}}塔兮币</span></div>
             <div class="footer-right" @click="confirmPay">确认支付</div>
         </div>
     </div>
@@ -29,6 +29,7 @@
 <script>
     import { XHeader, Actionsheet, TransferDom, ButtonTab, ButtonTabItem } from 'vux'
     import { XTextarea, Checklist } from 'vux'
+import { format } from 'url';
 
     export default {
         components: {
@@ -43,7 +44,7 @@
             return {
                 payIndex: 1,
                 query: {},
-                params: {}
+                params: {imgUrls:[]}
             }
         },
         activated(){
@@ -58,11 +59,24 @@
             change (val, label) {
                 console.log('change', val, label)
             },
+            // confirmPay(){
+            //     let towerUserId = this.$store.state.towerUserId
+            //     let towerContentId = this.params.towerContentId
+            //     let contentType = '3'
+            //     this.alipay(towerUserId, towerContentId, contentType)
+            // }
             confirmPay(){
-                let towerUserId = this.$store.state.towerUserId
-                let towerContentId = this.params.towerContentId
-                let contentType = '3'
-                this.alipay(towerUserId, towerContentId, contentType)
+                if(this.$store.state.towerUserId){
+                    let params = new FormData()
+                    params.append("towerContentId", this.params.towerContentId)
+                    this.$post("order", params, (data) => {
+                        this.toastSuccess("购买成功！", '200px')
+                        this.$router.go(-1)
+                    })
+                }else{
+                    this.$store.state.nextUrl = "./confirm_order?id=" + this.query.id
+                    this.login()
+                }
             }
             
         },
@@ -116,7 +130,6 @@
         text-align: right;
         line-height: 40px;
         padding-right: 8px;
-        padding-bottom: 10px;
         background: #fff;
         border-top: 1px solid #ddd;
         border-bottom: 1px solid #ddd;

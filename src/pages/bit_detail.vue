@@ -1,70 +1,105 @@
 <template>
     <div class="page"> 
-        <x-header class="pst" :left-options="{backText: ''}" :right-options="{showMore: true}" @on-click-more="sharePage">点滴详情</x-header>
+        <x-header class="pst" :left-options="{backText: ''}" :right-options="{showMore: true}" @on-click-more="sharePage">{{query.title || '点滴详情'}}</x-header>
         <div class="main">
-            <div class="hot-card">
-                <div class="user-info">
-                    <img :src="params.iconUrl" width="28" height='28' alt="">{{params.name}}<i class='iconfont icon-zhongfu'></i>
-                    <a v-show="params.follow != 1" class="active" @click.stop="follow(params.towerUserId)">+关注</a>
-                    <a v-show="params.follow == 1" @click.stop="no_follow(params.towerUserId)">已关注</a>
-                </div>
-                <div class="card-title">{{params.title}}</div>
-                <div class="card-desc" style="max-height: inherit;">{{params.content}}</div>
-                <div class="video-box"  v-if="params.videoUrl" @click="openVideo(params.videoUrl, params.videoImg)">
-                    <img class="video-img" :src="params.videoImg" alt="">
-                    <span class="play-btn"><i class="iconfont icon-bofang" style="font-size: 30px;"></i></span>
-                </div>
-                <!-- 图片 -->
-                <div v-if="params.imgUrls.length" class="thumbnail-box">
-                    <div v-if="params.imgUrls.length > 1" class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
-                        v-for="(imgItem, imgIndex) in params.imgUrls" :key="imgIndex" @click.stop="viewPicture(params.imgUrls, imgIndex)"></div>
-                    <div v-if="params.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(params.imgUrls, 0)">
-                        <img :src="params.imgUrls[0]" alt="">
-                    </div>
-                </div>
+            <scroller lock-x height="-92" ref="scrollerBottom">
                 <div>
-                    {{params.position}}
-                    <img class="fr" v-if="params.scene != '0' && params.scene" :src="'/static/scene' + params.scene + '.png'" width="20"/>
-                    <img class="fr" v-if="params.weather != '0' && params.weather" :src="'/static/weather' + params.weather + '.png'" width="20"/>
-                    <img class="fr" v-if="params.mood != '0' && params.mood" :src="'/static/mood' + params.mood + '.png'" width="20"/>
-                </div>
-                <div class="handle">{{longTime(params.createDate)}}
-                    <i v-show="params.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(params.towerContentId)"></i>
-                    <i v-show="params.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(params.towerContentId)"></i>
-                    <i v-show="params.collection != 1" class="iconfont icon-ego-heart" @click.stop="collection(params.towerContentId)"></i>
-                    <i v-show="params.collection == 1" class="iconfont icon-guanzhu text-red" @click.stop="no_collection(params.towerContentId)"></i>
-                </div> 
-            </div>
-            <div class="comment">
-                <div class="tab"><span>评论</span></div>
-                <div v-for="(item, index) in commentList" :key="index" class="comment-card">
-                    <div class="title">
-                        <img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}
-                        <span>2018-05-04 08:08</span>
+                    <div class="hot-card">
+                        <div class="user-info">
+                            <router-link :to="'./homepage?id=' + params.towerUserId">
+                                <img :src="params.iconUrl" width="28" height='28' alt="">{{params.name}}<i class='iconfont icon-zhongfu'></i>
+                            </router-link>
+                            <a @click="showPop1 = true" style="float: right;margin-left: 6px;"><i class="iconfont icon-tainjia-copy"></i></a>
+                            <a v-show="params.follow != 1" class="active guanzhu" @click.stop="follow(params.towerUserId)">+关注</a>
+                            <a v-show="params.follow == 1" class="guanzhu" @click.stop="no_follow(params.towerUserId)">已关注</a>
+                        </div>
+                        <div class="card-title">{{params.title}}</div>
+                        <div class="video-box"  v-if="params.videoUrl" @click="openVideo(params.videoUrl, params.videoImg, params.contentType, params.price, params.buy)" :style="{backgroundImage: 'url(' + params.videoImg + ')' }">
+                            <span class="play-btn"><i class="iconfont icon-bofang" style="font-size: 30px;"></i></span>
+                        </div>
+                        <!-- 图片 -->
+                        <div v-if="params.imgUrls && params.imgUrls.length == 1" class="thumbnail-box">
+                            <div class="thumbnail-one" @click.stop="viewPicture(params.imgUrls, 0)">
+                                <img :src="params.imgUrls[0]" alt="">
+                            </div>
+                        </div>
+                        <div v-if="params.imgUrls && params.imgUrls.length >1" class="thumbnail-box" style="margin-left: 0;">
+                            <div class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
+                                v-for="(imgItem, imgIndex) in params.imgUrls" :key="imgIndex" @click.stop="viewPicture(params.imgUrls, imgIndex)"></div>
+                        </div>
+                        <div ref="content" class="card-desc" style="max-height: inherit;"></div>
+                        <div>
+                            {{params.position}}
+                            <img class="fr" v-if="params.scene != '0' && params.scene" :src="'/static/scene' + params.scene + '.png'" width="20"/>
+                            <img class="fr" v-if="params.weather != '0' && params.weather" :src="'/static/weather' + params.weather + '.png'" width="20"/>
+                            <img class="fr" v-if="params.mood != '0' && params.mood" :src="'/static/mood' + params.mood + '.png'" width="20"/>
+                        </div>
+                        <div class="handle">{{longTime(params.createDate)}}
+                            <span v-if="showDelete">
+                                <i class="iconfont icon-shanchu" @click.stop="deleteContent(params.towerContentId)"></i>
+                            </span>
+                            <span>
+                                <i v-show="params.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(params.towerContentId)"></i>
+                                <i v-show="params.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(params.towerContentId)"></i>
+                                {{params.collectionNum}}
+                            </span>
+                            <span>
+                                <i class="iconfont icon-pinglun" @click="toSend"></i>
+                                {{params.commentNum}}
+                            </span>
+                            <span>
+                                <i v-show="params.collection != 1" class="iconfont icon-ego-heart" @click.stop="collection(params.towerContentId)"></i>
+                                <i v-show="params.collection == 1" class="iconfont icon-guanzhu text-red" @click.stop="no_collection(params.towerContentId)"></i>
+                                {{params.praiseNum}}
+                            </span>
+                        </div> 
                     </div>
-                    <p>{{item.comment}}</p>
+                    <div class="comment">
+                        <div class="tab"><span>评论</span></div>
+                        <div v-for="(item, index) in commentList" :key="index" class="comment-card">
+                            <div class="title">
+                                <img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}
+                                <span>{{formatDate(item.date, 'yyyy-MM-dd hh:mm')}}</span>
+                            </div>
+                            <p>{{item.comment}}</p>
+                        </div>
+                        <div v-if="!commentList[0]">
+                            <p class="empty-comment">暂无评论</p>
+                        </div>
+                    </div>
                 </div>
-                <div v-if="!commentList[0]">
-                    <p class="empty-comment">暂无评论</p>
-                </div>
-            </div>
+            </scroller>
         </div>
-        <div class="footer" @click="toSend">评论</div>
+        <div class="footer" @click="showPop = true">评论</div>
         <div></div>
         <popup v-model="showPop" @on-show="showPopup">
-            <div class="popup">
-                <div class="footer-fixed">
-                    <x-input v-model="commonText" class="common-input" ref="common" placeholder="写评论" :show-clear="false"></x-input>
-                    <span class="text-base" @click="send">发送</span>
+            <div class="pop-footer">
+                <div class="review-box">
+                    <x-textarea :height="20" :rows="1" ref="common" class="review-input textarea" autosize placeholder="写评论" v-model="commonText"></x-textarea>
                 </div>
+                <div class="review" @click="send">发送</div> 
             </div>
         </popup>
+        <popup v-model="showPop1">
+            <div class="complaint">
+                <p @click="shield">屏蔽</p>
+                <p @click="complaint">投诉</p>
+                <p @click="showPop1 = false">取消</p>
+            </div>
+        </popup>
+        <confirm v-model="showComplaint" class="confirm-cust"
+            @on-confirm="confirmComplaint"
+            @on-show="opinion = ''">
+            <div slot="">
+                <x-textarea v-model="opinion" placeholder="请输入投诉原因" :rows="5"></x-textarea>
+            </div>
+        </confirm>
     </div>
 </template>
 
 <script>
     import { XHeader, Actionsheet, TransferDom, ButtonTab, ButtonTabItem, XInput, Popup } from 'vux'
-    import { Tab, TabItem, Sticky, XButton, Swiper, SwiperItem } from 'vux'
+    import { Tab, TabItem, Sticky, XButton, Swiper, SwiperItem, XTextarea, Scroller, Confirm } from 'vux'
     import { setTimeout } from 'timers';    
 
     export default {
@@ -81,6 +116,9 @@
             SwiperItem,
             XInput,
             Popup,
+            XTextarea,
+            Scroller,
+            Confirm,
         },
         data () {
             return {
@@ -91,9 +129,16 @@
                 query: {},      //  页面get参数
                 params: {},     //  内容详细信息
                 commentList: {},     //  评论列表
+                showPop1: false,     //  投诉弹框
+                showComplaint: false,       //  投诉
+                opinion: '',                //  投诉内容
+                showDelete: false,          //  是否显示删除按钮
             }
         },
         activated(){
+            this.$nextTick(() => {
+                this.$refs.scrollerBottom.reset({top: 0})
+            })
             this.query = this.$router.currentRoute.query
             if (this.query.status == '1') this.showPop = true
 
@@ -111,11 +156,14 @@
             },
             //  获取详情数据
             getDetail(){
+                this.showDelete = false
                 let params = new FormData()
                 params.append("towerContentId", this.query.id)
                 this.$post("getcontentbyid", params, (data) => {
                     this.params = data.content
+                    this.getFormatContent(data.content.content)
                     this.commentList = data.commentList
+                    this.showDelete = this.params.towerUserId == this.$store.state.towerUserId
                 })
             },
             // 显示评论弹框
@@ -136,6 +184,10 @@
             },
             //  发表评论
             send(){
+                if(!this.$store.state.towerUserId){
+                    this.login()
+                    return
+                }
                 this.showPop = false
                 if(this.commonText){
                     let params = new FormData()
@@ -164,7 +216,7 @@
                 let params = new FormData()
                 console.log(id)
                 params.append('towerUserId_fans', id)
-                this.post("http://106.14.7.242:8080/tower/app/account!follow.action", params, (data) => {
+                this.$post("follow", params, (data) => {
                     this.params.follow = '1'
                 })
             },
@@ -173,7 +225,7 @@
                 let params = new FormData()
                 console.log(id)
                 params.append('towerUserId_fans', id)
-                this.post("http://106.14.7.242:8080/tower/app/account!no_follow.action", params, (data) => {
+                this.$post("no_follow", params, (data) => {
                     this.params.follow = '0'
                 })
             },
@@ -217,6 +269,58 @@
                     this.params.praise = '0'
                 })
             },
+            //  屏蔽
+            shield(){
+                if(!this.$store.state.towerUserId){
+                    this.login()
+                    return
+                }
+                let params = new FormData()
+                params.append("towerUserId_shield", this.params.towerUserId)
+                this.$post("shield", params, (data) => {
+                    this.toastSuccess("屏蔽成功！")
+                    this.showPop1 = false
+                })
+            },
+            complaint(){
+                if(!this.$store.state.towerUserId){
+                    this.login()
+                    return
+                }
+                this.showPop1 = false
+                this.showComplaint = true
+            },
+            confirmComplaint(){
+                let params = new FormData()
+                params.append("towerContentId", this.params.towerContentId)
+                params.append("content", this.opinion)
+                this.$post("complaint", params, (data) => {
+                    this.$vux.toast.show({
+                        text: "投诉成功，我们会在24小时之内处理",
+                        type: "text",
+                        width: '300px',
+                        time: 2500,
+                        position: 'top',
+                    })
+                    this.showComplaint = false
+                })
+            },
+            //  删除内容
+            deleteContent(id){
+                this.$vux.confirm.show({
+                    title: '塔兮',
+                    content: '确定要删除吗?',
+                    onCancel: () => {},
+                    onConfirm: () => {
+                        let params = new FormData()
+                        params.append('towerContentId', id)
+                        this.$post("deletecontent", params, (data) => {
+                            this.toastSuccess("删除成功")
+                            this.$router.go(-1)
+                        })
+                    }
+                })
+            },
         },
     }
 </script>
@@ -241,7 +345,7 @@
                     border: 1px solid #ddd;
                     margin-right: 10px;
                 }
-                a{
+                a.guanzhu{
                     float: right;
                     margin-top: 3px;
                     height: 25px;
@@ -262,6 +366,8 @@
             .card-title{
                 font-weight: bold;
                 padding-bottom: 3px;
+                text-align: center;
+                font-size: 16px;
             }
             .card-desc{
                 box-sizing: border-box;
@@ -269,6 +375,7 @@
                 padding: 0px 0;
                 line-height: 20px;
                 padding-bottom: 2px;
+                word-break: break-all;
             }
             .handle{
                 color: #ccc;
@@ -359,31 +466,61 @@
         z-index: 2;
         color: #fff;
     }
-    .footer-fixed{
-        background: #f2f2f2;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: 46px;
-        padding: 0 10px;
-        box-sizing: border-box;
-        line-height: 46px;
-        z-index: 2;
-        display: flex;
-        .vux-x-input{
-            padding: 0;
-            flex: 1;
-            border: 1px solid #ddd;
-            height: 30px;
-            background: #fff;
-            margin-top: 7px;
-            padding: 0 10px;
-            margin-right: 10px;
-        }
-    }
     .empty-comment{
         text-align: center;
         line-height: 30px;
+    }
+    .video-box{
+        background: #fff;
+        height: 400px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+    .thumbnail{
+        width: 32%;
+        padding-bottom:30%;
+        height: 0;
+        margin: 0 1% 1% 0;
+        &:nth-of-type(3n){
+            margin-right: 0;
+        }
+    }
+    .pop-footer{
+        background: #fbf9fe;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        .review-box{
+            flex: 1;
+            padding: 10px 0 10px 10px;
+        }
+        .review-input{
+            background: #fff;
+            border: 1px solid #eee;
+            vertical-align: bottom;
+            padding: 5px;
+            border-radius: 6px;
+            line-height: 20px;
+        }
+        .review{
+            width: 60px;
+            color: @baseColor;
+            text-align: center;
+            padding-bottom: 12px;
+        }
+    }
+    .complaint{
+        background: #fff;
+        line-height: 40px;
+        text-align: center;
+        p{
+            border-bottom: 1px solid #ddd;
+        }
+        p:nth-of-type(3){
+            border-bottom: none;
+            border-top: 4px solid #ddd;
+        }
     }
 </style>
 

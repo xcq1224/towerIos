@@ -26,18 +26,42 @@
                 <cell class="cell" is-link @click.native="goTo('./order')">
                     <span slot="title"><i class="iconfont icon-hetong2" style="color: #76b662;"></i>我的订单</span>
                 </cell>
-                <cell class="cell" is-link @click.native="goTo('./my_skill')">
+                <!-- <cell class="cell" is-link @click.native="goTo('./my_skill')">
                     <span slot="title"><i class="iconfont icon-jinengtechang--" style="color: #1c8ef0;"></i>我的技能</span>
-                </cell>
+                </cell> -->
                 <cell class="cell" is-link @click.native="goTo('./collection')">
                     <span slot="title"><i class="iconfont icon-ego-heart" style="color: #fe3c3c;"></i>我的收藏</span>
                 </cell>
-                <!-- <cell class="cell" is-link link="./test5">
+                <cell class="cell" is-link @click.native="goTo('./shield')">
+                    <span slot="title"><i class="iconfont icon-pingbi1" style="color: #86df79;"></i>我的屏蔽</span>
+                </cell>
+                <cell class="cell" is-link @click.native="goTo('./coin')">
                     <span slot="title"><i class="iconfont icon-jinbi" style="color: #fe9e0c;"></i>塔兮币</span>
-                </cell>   -->
+                </cell>  
                 <cell class="cell" is-link link="./settings">
                     <span slot="title"><i class="iconfont icon-shezhi" style="color: #7f91c3;"></i>设置</span>
                 </cell>  
+            </group>
+            <div style="height: 20px; background: #f6f6f6;"></div>
+            <group gutter='0'>
+                <cell class="cell" is-link @click.native="goTo('./view1')">
+                    <div slot="title">
+                        <i class="iconfont icon-zan" style="color: #ffa103;"></i>
+                        <span style="position: relative;">赞<i class="dot" v-show="praiseNew == '1'"></i></span>
+                    </div>
+                </cell>
+                <cell class="cell" is-link @click.native="goTo('./view2')">
+                    <div slot="title">
+                        <i class="iconfont icon-pinglun" style="color: #34b87f;"></i>
+                        <span style="position: relative;">评论<i class="dot" v-show="commentNew == '1'"></i></span>
+                    </div>
+                </cell>
+                <cell class="cell" is-link @click.native="goTo('./view3')">
+                    <div slot="title">
+                        <i class="iconfont icon-ego-heart" style="color: #5ab5d8;"></i>
+                        <span style="position: relative;">收藏<i class="dot" v-show="collectionNew == '1'"></i></span>
+                    </div>
+                </cell>
             </group>
         </div>
     </div>
@@ -68,6 +92,11 @@
                 avatar: '',
                 followNum: '',
                 fansNum: '',
+
+                //  是否有新消息
+                praiseNew: '0',
+                commentNew: '0',
+                collectionNew: '0',
             }
         },
         activated(){
@@ -82,6 +111,7 @@
 	                this.fansNum = data.fansNum
 	            })
             }
+            this.getNews()
         },
         // deactivated(){
         //     console.log(3);
@@ -94,6 +124,17 @@
             //  跳转我的粉丝页面
             toFans(){
                 this.$router.push("./fans")
+            },
+            //  是否有新消息
+            getNews(){
+                if(this.$store.state.towerUserId){
+                    let params = new FormData()
+                    this.$post("getexchange", params, (data) => {
+                        this.praiseNew = data.praiseNew
+                        this.commentNew = data.commentNew
+                        this.collectionNew = data.collectionNew
+                    })
+                }
             },
         },
     }
@@ -144,7 +185,31 @@
             line-height: 40px;
             border-radius: 6px;
         }
-        
+        .news-box{
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 40px;
+            i{
+                color: #fff;
+                margin-right: 0;
+                font-size: 24px;
+            }
+        }
+        .dot{
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: red;
+            border-radius: 50%;
+            top: -2px;
+            right: -10px;
+            margin-right: 0 !important;
+        }
     }
 </style>
 

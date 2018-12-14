@@ -6,27 +6,29 @@
                 use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
                 lock-x ref="scrollerBottom" height="100%">
                 <div v-show="isEmpty">
-                    <div class="employment-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
-                        <p class="title text-ellipsis">{{item.title}}</p>
+                    <div class="card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
+                        <!-- <img :src="item.videoImg || item.imgUrls[0]"> -->
+                        <div v-if="item.imgUrls.length" class="thumbnail" :style="{backgroundImage: 'url(' + item.imgUrls[0] + ')' }"></div>
+                        <div v-if="item.videoImg" class="thumbnail bit-video iconfont icon-bofang1" :style="{backgroundImage: 'url(' + item.videoImg + ')' }"></div>
+                        <p class="title">{{item.title}}</p>
                         <p>{{item.name}}</p>
-                        <p>{{longTime(item.createDate)}}</p>
+                        <p><span class="num">{{item.learnNum}}</span>人收藏</p>
                     </div>
                 </div>
                 <div v-show="!isEmpty">
-                    <div style="text-align: center;">暂无数据</div>
+                    <div style="text-align: center;color: #ccc;">
+                        <p><i class="iconfont icon-empty" style="font-size: 100px;"></i></p>
+                        <p style="position: relative;top: -20px;">暂无数据</p>
+                    </div>
                 </div>
             </scroller>
         </div>
         <!-- 筛选 -->
         <div v-show="popup" class="filter-wrap" @click="popup = false">
             <div class="filter">
-                <p>
-                    <span>生活</span>
-                    <span>读研</span>
-                    <span>留学</span>
-                    <span>创业</span>
-                    <span>职场</span>
-                </p>
+                <div>
+                    <span :class="realStuffKindId == item.realStuffKindId ? 'text-base' : ''" v-for="(item, index) in kindList" :key="index" @click="filter(item.realStuffKindId)">{{item.realStuffKindName}}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -77,6 +79,9 @@
                 contentList: [],    //  干货内容列表
                 popup: false,
 
+                kindList: [],       //  分类列表
+                realStuffKindId: '0',    
+
                 //  刷新、加载
                 pageNum: 1,
                 barsNum: 10,            //  每页10条
@@ -90,12 +95,10 @@
             this.refresh()
         },
         activated(){
-            // document.getElementsByClassName('chosen')[0].scrollTop = this.chosenTop
-            // this.chosenTop = 0
-            // let params = new FormData()
-            // this.$post("get_b_test", params, (data) => {
-            //     this.contentList = data.contentList
-            // })
+            let params1 = new FormData()
+            this.$post("getrealstuffkind", params1, (data) => {
+                this.kindList = data.realStuffKinds
+            })
         },
         methods: {
             //  加载数据
@@ -116,8 +119,9 @@
                     let params = new FormData()
                     params.append("pageNum", 1)
                     params.append("barsNum", this.barsNum.toString())
+                    params.append("realStuffKind", this.realStuffKindId)
                     this.$vux.loading.show()
-                    this.$post("get_b_test", params, (data) => {
+                    this.$post("getrealstufflist", params, (data) => {
                         this.contentList = data.contentList
                         this.isEmpty = data.contentList.length
                         if(data.contentList.length == this.barsNum){
@@ -136,6 +140,7 @@
                     let params = new FormData()
                     params.append("pageNum", this.pageNum)
                     params.append("barsNum", this.barsNum.toString())
+                    params.append("realStuffKindId", this.realStuffKindId)
                     this.$post("get_b_test", params, (data) => {
                         this.contentList = this.contentList.concat(data.contentList)
                         this.isEmpty = this.contentList.length
@@ -147,6 +152,10 @@
                         }
                     })
                 })
+            },
+            filter(id){
+                this.realStuffKindId = id
+                this.refresh()
             },
         },
     }
@@ -188,25 +197,42 @@
         height: 100%;
         overflow: auto;
     }
-    .employment-card{
-        padding: 15px 8px;
-        border-bottom: 1px solid #ddd;
+    .card{
+        padding: 12px 8px 8px;
+        margin-bottom: 1px;
         background: #fff;
         overflow: hidden;
         font-size: 12px;
-        img{
+    .thumbnail{
             float: left;
             border-radius: 8px;
             margin-right: 10px;
             width: 118px;
             height: 70px;
         }
-        p{  
+        p{
+            color: #ccc;
             &.title{
+                color: #777;
                 font-weight: bold;
+                height: 38px;
                 font-size: 14px;
+                line-height: 18px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
             }
-            line-height: 24px;
+            .num{
+                color: #777;
+            }
+            .sprice{
+                float: right;
+                color: #f00;
+                margin-right: 18px;
+                font-weight: bold;
+            }
         }
     }
     .filter-wrap{
@@ -225,6 +251,21 @@
                 padding: 15px 15px 0;
                 span{
                     padding: 0 10px;
+                }
+            }
+        }
+        .filter{
+            line-height: 40px;
+            // padding-bottom: 0 !important;
+            height: 40px;
+            box-sizing: border-box;
+            overflow: hidden;
+            >div{
+                overflow: auto;
+                height: 50px;
+                padding-right: 10px;
+                span{
+                    padding-left: 10px;
                 }
             }
         }

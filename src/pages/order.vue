@@ -2,11 +2,17 @@
     <div class="has-tabbar page"> 
         <x-header class="pst" :left-options="{backText: ''}"><span>我的订单</span></x-header>
         <div class="main">
-            <div class="order-item" v-for="(item, index) in orderList" :key="index">
-                <div class="item-body">
-                    <p class="text-333">{{item.orderName}}</p>
-                    <p><span class="font12">{{item.orderDate}}</span><span class="fr">￥{{item.price}}</span></p>
+            <div v-if="orderList.length">
+                <div class="order-item" v-for="(item, index) in orderList" :key="index">
+                    <div class="item-body" @click="goDetail(item.towerContentId)">
+                        <p class="text-333">{{item.orderName}}</p>
+                        <p><span class="font12">{{item.orderDate}}</span><span class="fr">{{item.price}}塔兮币</span></p>
+                    </div>
                 </div>
+            </div>
+            <div v-else class="empty">
+                <p><i class="icon-empty iconfont"></i></p>
+                <p style="position: relative; top: -40px;">你还没有购买过商品哦</p>
             </div>
         </div>
     </div>
@@ -41,6 +47,9 @@
                 this.$post("getorderformlist", params, (data) => {
                     this.orderList = data.orderFormList
                 })
+            },
+            goDetail(id){
+                this.$router.push("./detail?type=0&id=" + id)
             },
         },
     }
@@ -101,6 +110,15 @@
             }
         }
         
+    }
+    .empty{
+        p{
+            text-align: center;
+            color: #ccc;
+            i{
+                font-size: 160px;
+            }
+        }
     }
 </style>
 

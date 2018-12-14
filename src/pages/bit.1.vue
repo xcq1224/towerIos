@@ -1,59 +1,136 @@
 <template>
     <div class="page"> 
-        <x-header class="pst" :left-options="{showBack: false}">我的点滴</x-header>
+        <x-header class="pst" :left-options="{showBack: false}">我的点滴
+            <span slot="right">
+                <router-link to="./resume">生成履历</router-link>
+                <icon style="font-size: 18px;vertical-align: text-top; color: #fff;" type="search" @click.native.stop="popup5 = true"></icon>   
+            </span>
+        </x-header>
         <div class="main">
-            <scroller lock-y :scrollbar-x=false>
-                <div class="box1">
-                    <div class="ability-item">
-                        <p @click="popup8 = true">分类</p>
+            <scroller v-show="dribKindList.length>5" lock-y :scrollbar-x=false>
+                <div class="box1" :style="'width: '+ 22*(dribKindList.length + 1) +'vw;'">
+                    <div :class="dribKindName == '' ? 'ability-item text-base' : 'ability-item'" @click="getDribByKind('', '', '')">
+                        <p>全部</p>
+                        <p class="num"></p>
+                    </div>
+                    <div :class="item.dribKindName == dribKindName ?'ability-item text-base' : 'ability-item'" v-for="(item, index) in dribKindList" :key="index" @click="getDribByKind(item.dribKindId, item.dribKindName, item.dribKindDetail)">
+                        <p>{{item.dribKindName || '默认分类'}}</p>
+                        <p class="num">{{item.dribKindNum}}</p>
                     </div>
                     <div class="ability-item">
-                        <p @click="popup9 = true">时间</p>
+                        <p class="follow-more text-base" style="position: relative; top: 10px;" @click="show1 = true">●●●</p>
                     </div>
-                    <div class="ability-item">
-                        <p @click="popup10 = true">城市</p>
-                    </div>
-                    <div class="ability-item">
-                        <p @click="popup5 = true">心情</p>
-                    </div>
-                    <div class="ability-item">
-                        <p @click="popup6 = true">天气</p>
-                    </div>
-                    <div class="ability-item">
-                        <p @click="popup7 = true">场景</p>
-                    </div>
-                    <!-- <div class="ability-item">
-                        <p>足迹</p>
-                    </div> -->
                 </div>
             </scroller>
             <scroller v-show="!isEmpty" use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore"
                 use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh"
-                lock-x ref="scrollerBottom" height="-142" @on-scroll="onScroll">
-                <div class="scroll-box">
-                    <router-link to="./personal_info" class="hot-card" v-if="!dribKindId && !filterFiled">
-                        <div class="thumbnail" :style="{backgroundImage: 'url(' + cardUrls[0] + ')' }" style="margin-right: 5px;"></div>
-                        <div class="bit-content" style="text-align: left;">
-                            <p class="bit-time">我的名片</p>
-                            <p class="bit-address">&nbsp;</p>
-                            <p class="" v-for="(item, index) in label" :key="index">{{item}}</p>
+                lock-x ref="scrollerBottom" height="-172" @on-scroll="onScroll">
+                <div>
+                    <div v-show="!dribKindDetail" @click="popup0 = true">
+                        <div class="desc-info" v-show="dribKindName == ''">
+                            <div class="card-info">
+                                <img :src="cardUrls[0]" alt="">
+                                <div>
+                                    <p>
+                                        <span class="sex-box" :style="sex == '女'? '' : 'background: #3399ff;'"><i :class="sex == '女'? 'iconfont icon-nv' : 'iconfont icon-male_icon'"></i></span>
+                                    </p>
+                                    <p v-for="(item, index) in label" :key="index">{{item}}</p>
+                                </div>
+                            </div>
                         </div>
-                    </router-link>
-                    <div v-else-if="!contentShowList.length" style="text-align: center; line-height: 40px;">没有找到任何记录！</div>
-                    <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentShowList" :key="index">
-                        <div v-if="item.imgUrls.length" class="thumbnail" :style="{backgroundImage: 'url(' + item.imgUrls[0] + ')' }"></div>
-                        <div v-if="item.videoImg" class="thumbnail bit-video iconfont icon-bofang1" :style="{backgroundImage: 'url(' + item.videoImg + ')' }"></div>
-                        <div class="bit-content">
-                            <p class="bit-time">{{formatDate(item.createDate, 'yyyy.MM.dd')}}</p>
-                            <p class="bit-address">{{item.position || '&nbsp;'}}</p>
-                            <p class="content-text text-ellipsis2" style="word-break: break-all;-webkit-line-clamp: 3;">{{item.content}}</p>
-                            <p class="bit-card-ft">
-                                <img v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="16"/>
-                                <img v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="16"/>
-                                <img v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="16"/>
-                            </p>
+                        <div class="desc-info" v-show="dribKindName == '基本信息'">
+                            <p>姓名：</p>
+                            <p>性别：</p>
+                            <p>出生日期：</p>
+                            <p>学校：</p>
+                            <p>专业：</p>
+                            <p>学历：</p>
+                            <p>入学时间：</p>
+                            <p>用一个词来形容自己：</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '日常点滴'">
+                            <p>我爱好记录生活，你也可以在我的生活中更好的认识我</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '技能变现'">
+                            <p>我擅长的技能有这些：</p>
+                            <p>技能1：</p>
+                            <p>技能2：</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '技能学习'">
+                            <p>我注重生活技能的提升，这些是我学过和正在学习的技能：</p>
+                            <p>学习1：</p>
+                            <p>学习2：</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '文学创作'">
+                            <p>写文章，是我的爱好，时不时发表一下想法让我觉得很愉快</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '校园生活'">
+                            <p>简单梳理一下自己的教育经历：</p>
+                            <p>xx年xx月-xx年xx月  xx高中</p>
+                            <p>xx年xx月-xx年xx月  xx大学    xx专业   xx学历</p>
+                            <p>xx年xx月-xx年xx月  xx大学    xx专业   xx学历</p>
+                            <p>美好的校园生活，我将它们在这里封存</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '学业成绩'">
+                            <p>关于专业成绩，我可以用不错来形容：</p>
+                            <p>GPA：</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '工作经验'">
+                            <p>在工作经验，我对自己的职业发展是很负责任的，待过的公司都帮助我收获了巨大的成长：</p>
+                            <p>xx年xx月-xx年xx月  xx公司    xx职务</p>
+                            <p>xx年xx月-xx年xx月  xx公司    xx职务</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '项目经验'">
+                            <p>这些是我参与过的项目和取得的成绩：</p>
+                            <p>xx年xx月-xx年xx月 xx项目  xx角色     xx成绩</p>
+                            <p>xx年xx月-xx年xx月 xx项目  xx角色     xx成绩</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '实践经验'">
+                            <p>我注重将所学知识与实践应用的结合，在校期间参与过以下实践活动：</p>
+                            <p>xx年xx月-xx年xx月 xx活动  xx成绩</p>
+                            <p>xx年xx月-xx年xx月 xx活动  xx成绩</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '兴趣爱好'">
+                            <p>我闲暇时间是这么安排的，做这些事让我轻松：</p>
+                            <p>兴趣1:</p>
+                            <p>兴趣2:</p>
+                        </div>
+                        <div class="desc-info" v-show="dribKindName == '个人评价'">
+                            <p>用一句话来描述我自己，我觉得是：</p>
                         </div>
                     </div>
+                    <div class="desc-info" v-show="dribKindDetail" @click="popup0 = true">
+                        <p>{{dribKindDetail}}</p>
+                    </div>
+                    <div style="height: 15px;"></div>
+                    <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentShowList" :key="index">
+                        <div v-show="item.title" class="card-title text-ellipsis">{{item.title}}</div>
+                        <div v-show="item.content && item.contentType != 6" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
+                        <div v-if="item.contentType == 2 || item.contentType == 3" class="video-box">
+                            <img :src="item.videoImg" alt="" class="video-img">
+                            <span class="play-btn iconfont icon-bofang" @click.stop="openVideo(item.videoUrl, item.videoImg)"></span>
+                        </div>
+                        <!-- 图片 -->
+                        <div v-if="item.imgUrls.length" class="thumbnail-box">
+                            <div v-if="item.imgUrls.length > 1" class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
+                                v-for="(imgItem, imgIndex) in item.imgUrls" :key="imgIndex" @click.stop="viewPicture(item.imgUrls, imgIndex)"></div>
+                            <div v-if="item.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(item.imgUrls, 0)">
+                                <img :src="item.imgUrls[0]" alt="">
+                            </div>
+                        </div>
+                        <div style="overflow: hidden;">
+                            {{item.position}}
+                            <img class="fr" v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="20"/>
+                            <img class="fr" v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="20"/>
+                            <img class="fr" v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="20"/>
+                        </div>
+                        <div class="handle">{{longTime(item.createDate)}}
+                            <i class="iconfont icon-shanchu" @click.stop="deleteContent(item.towerContentId, index)"></i>
+                            <i class="iconfont icon-icon-1" @click.stop="editContent(item.towerContentId)"></i>
+                            <i class="iconfont icon-pinglun" @click.stop="toDetail(item.towerContentId, item.contentType, 1)"></i>
+                        </div> 
+                    </div>
+                    <div v-show="!contentShowList.length" style="text-align: center;">没有找到任何记录！</div>
                 </div>
             </scroller>
         </div>
@@ -129,8 +206,17 @@
         </popup>
         <!-- 筛选 -->
         <div v-show="popup5" class="filter-wrap" @click="popup5 = false">
-            <div class="filter" style="background: #24ceff;">
+            <div class="filter">
                 <p>
+                    <span class="label">日期</span>
+                    <span class="text-base" @click="filter('week', '1')">默认</span>&nbsp;
+                    <span class="text-base" @click="filter('week', '0')">本周</span>&nbsp;
+                    <span class="text-base" @click="filter('week', '-1')">上周</span>&nbsp;
+                    <span class="text-base" @click="filter('week', '-2')">更早</span>
+                </p>
+                <p>
+                    <span class="label">心情</span>
+                    <span class="text-base" @click="filter('mood', '0')">all</span>&nbsp;&nbsp;
                     <img src="/static/mood1.png" alt="" @click="filter('mood', '1')">
                     <img src="/static/mood2.png" alt="" @click="filter('mood', '2')">
                     <img src="/static/mood3.png" alt="" @click="filter('mood', '3')">
@@ -138,11 +224,9 @@
                     <img src="/static/mood5.png" alt="" @click="filter('mood', '5')">
                     <img src="/static/mood6.png" alt="" @click="filter('mood', '6')">
                 </p>
-            </div>
-        </div>
-        <div v-show="popup6" class="filter-wrap" @click="popup6 = false">
-            <div class="filter" style="background: #24ceff;">
                 <p>
+                    <span class="label">天气</span>
+                    <span class="text-base" @click="filter('weather', '0')">all</span>&nbsp;&nbsp;
                     <img src="/static/weather1.png" alt="" @click="filter('weather', '1')">
                     <img src="/static/weather2.png" alt="" @click="filter('weather', '2')">
                     <img src="/static/weather3.png" alt="" @click="filter('weather', '3')">
@@ -150,11 +234,9 @@
                     <img src="/static/weather5.png" alt="" @click="filter('weather', '5')">
                     <img src="/static/weather6.png" alt="" @click="filter('weather', '6')">
                 </p>
-            </div>
-        </div>
-        <div v-show="popup7" class="filter-wrap" @click="popup7 = false">
-            <div class="filter" style="background: #24ceff;">
                 <p>
+                    <span class="label">场景</span>
+                    <span class="text-base" @click="filter('scene', '0')">all</span>&nbsp;&nbsp;
                     <img src="/static/scene1.png" alt="" @click="filter('scene', '1')">
                     <img src="/static/scene2.png" alt="" @click="filter('scene', '2')">
                     <img src="/static/scene3.png" alt="" @click="filter('scene', '3')">
@@ -164,51 +246,12 @@
                 </p>
             </div>
         </div>
-        <div v-show="popup8" class="filter-wrap" @click="popup8 = false">
-            <div class="filter" style="background: #24ceff;padding-bottom: 0;">
-                <scroller v-show="dribKindList.length>5" lock-y :scrollbar-x=false>
-                    <div class="box2" :style="'width: '+ 22*(dribKindList.length + 3) +'vw;'">
-                        <div :class="dribKindName == '' ? 'ability-item text-base' : 'ability-item'" @click="getDribByKind('', '', '')">
-                            全部
-                        </div>
-                        <div :class="item.dribKindName == dribKindName ?'ability-item text-base' : 'ability-item'" v-for="(item, index) in dribKindList" :key="index" @click="getDribByKind(item.dribKindId, item.dribKindName, item.dribKindDetail)">
-                            {{item.dribKindName || '默认分类'}}
-                        </div>
-                        <div class="ability-item">
-                            <div class="follow-more" @click="show1 = true">●●●</div>
-                        </div>
-                        <div class="ability-item">
-                            <router-link to="./resume">导出履历</router-link>
-                        </div>
-                    </div>
-                </scroller>
-            </div>
-        </div>
-        <div v-show="popup9" class="filter-wrap" @click="popup9 = false">
-            <div class="filter" style="background: #24ceff;padding-bottom: 0;display: flex;">
-                <div class="filter-date" style="flex: 1;">
-                    <datetime v-model="startTime" @on-clear="startTime = ''" clear-text="清除" @click.native.stop class="date-custom" format="YYYY-MM-DD"></datetime>
-                </div>
-                <span class="data_">~</span>
-                <div class="filter-date" style="flex: 1;">
-                    <datetime v-model="endTime" @on-clear="endTime = ''" clear-text="清除" @click.native.stop class="date-custom" format="YYYY-MM-DD"></datetime>
-                </div>
-                <span class="data_" @click="refresh">确定&nbsp;&nbsp;</span>
-            </div>
-        </div>
-        <div v-show="popup10" class="filter-wrap" @click="popup10 = false">
-            <div class="filter city-box" style="background: #24ceff;">
-                <div>
-                    <span class="city-item" v-for="(item, index) in cityList" :key="index" @click="filter('city', item)">{{item}}</span>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
     import { XHeader, Actionsheet, TransferDom, ButtonTab, ButtonTabItem, Scroller, Popup, Group, XInput } from 'vux'
-    import { Tab, TabItem, Sticky, Divider, XButton, Swiper, SwiperItem, XTextarea, Radio, Icon, Datetime } from 'vux'
+    import { Tab, TabItem, Sticky, Divider, XButton, Swiper, SwiperItem, XTextarea, Radio, Icon } from 'vux'
     import { setTimeout } from 'timers';
 
     const pulldownDefaultConfig = {
@@ -250,7 +293,6 @@
             XTextarea,  
             Radio,
             Icon,
-            Datetime,
         },
         data () {
             return {
@@ -292,16 +334,8 @@
                 towerContentId: '',     //  当前编辑的内容id
             //  筛选
                 popup5: false,
-                popup6: false,
-                popup7: false,
-                popup8: false,
-                popup9: false,
-                popup10: false,
                 filterFiled: '',
                 filterType: '',
-                startTime: '',
-                endTime: '',
-                cityList: [],
             }
         },
         created(){
@@ -318,28 +352,14 @@
             })
             this.$vux.loading.show()
             this.loadMore()
-            this.getCity()
         },
         activated(){
             this.getdribkind()
         },
         deactivated(){
             this.popup5 = false
-            this.popup6 = false
-            this.popup7 = false
-            this.popup8 = false
-            this.popup9 = false
-            this.popup10 = false
         },
         methods: {
-            //获取城市列表
-            getCity(){
-                let params = new FormData()
-                this.$post("getdribcity", params, (data) => {
-                    this.cityList = data.cityList
-                })
-            },
-
             //  筛选
             filter(filterFiled, filterType){
                 this.filterFiled = filterFiled
@@ -407,8 +427,6 @@
                     params.append("pageNum", 1)
                     params.append("dribKindId", this.dribKindId)
                     params.append(this.filterFiled, this.filterType)
-                    params.append("startTime", this.startTime)
-                    params.append("endTime", this.endTime)
                     this.$vux.loading.show()
                     this.$post("getdrib", params, (data) => {
                         // this.dribKindName = dribKindName
@@ -431,8 +449,6 @@
                     params.append("pageNum", this.pageNum)
                     params.append("dribKindId", this.dribKindId)
                     params.append(this.filterFiled, this.filterType)
-                    params.append("startTime", this.startTime)
-                    params.append("endTime", this.endTime)
                     this.$vux.loading.show()
                     this.$post("getdrib", params, (data) => {
                         data.contentList.map(item => {
@@ -633,20 +649,64 @@
     @import "../style/base_color.less";
     .main{
         padding: 46px 0 60px;
-        background: #fff;
+        background: #f2f2f2;
         font-size: 12px;
+
+        .card-info{
+            text-align: center;
+            img{
+                max-width: 200px;
+                max-height: 160px;
+                border: 1px solid #ddd;
+            }
+            div{
+                vertical-align: top;
+                display: inline-block;
+                p{
+                    line-height: 30px;
+                    color: #777;
+                }
+                .sex-box{
+                    padding: 4px;
+                    border-radius: 50%;
+                    color: #fff;
+                }
+            }
+        }
+
+        .bit-title{
+          position: relative;
+          background: #fff;
+          color: @baseColor;
+          padding-left: 20px;
+          padding-top: 5px;
+          line-height: 24px;
+          &:before{
+            content: '';
+            display: block;
+            width: 4px;
+            height: 18px;
+            background: @baseColor; 
+            position: absolute;
+            left: 10px;
+          }
+        }
         .box1 {
+            height: 50px;
             position: relative;
-            display: flex;
             background: #fff;
             overflow: hidden;
             text-align: center;
-            line-height: 40px;
+            line-height: 24px;
+            padding: 10px 0;
             border-top: 1px solid #ddd;
             border-bottom: 1px solid #ddd;
             .ability-item{
                 float: left;
-                flex: 1;
+                width: 80px;
+                .num{
+                    font-weight: bold;
+                }
             }
         }
         .ability{
@@ -672,100 +732,61 @@
             line-height: 20px;
             color: #ccc;
         }
-        .scroll-box{
-            overflow: hidden;
-            padding: 0 5px;
-            position: relative;
-            &:after{
-                content: '';
-                width: 1px;
-                height: 100%;
-                position: absolute;
-                left: 50%;  
-                background: #333;
-            }
-        }
         .hot-card{
+            padding: 10px 10px 3px;
             background: #fff;
             margin-bottom: 15px;
-            padding-right: 3px;
             color: #777;
-            float: left;
-            width: 50%; 
-            box-sizing: border-box;
-            min-height: 160px;
-            overflow: hidden;
-            border-top-left-radius: 6px;
-            position: relative;
-            &:before{
-                content: "";
-                display: block;
-                height: 1px;
-                width: calc(100% - 3px);
-                background: #333;
-                position: absolute;
-                right: 0;
-            }
-            &:nth-of-type(2n){
-                float: right;
-                border-top-left-radius: 0;
-                border-top-right-radius: 6px;
-                padding-left: 3px;
-                padding-right: 0;
-                .thumbnail{
-                    float: right;
-                }
-                &:before{
-                    left: 0;
-                }
-                .bit-content{
-                    text-align: left; 
-                }
-                .bit-card-ft{
-                    text-align: right;
-                }
-            }
-            &:nth-of-type(2){
-                margin-top: 120px;
-            }
-            &:nth-of-type(1){
-                margin-top: 20px;
-            }
-            .thumbnail{
-                height: 110px;
-                width: 110px;
-                float: left;
-                margin: 0;
+            .user-info{
+                overflow: hidden;
                 margin-bottom: 5px;
-                border: 1px solid #333;
-                border-radius: 6px;
-                position: relative;
+                img{
+                    border-radius: 50%;
+                    vertical-align: middle;
+                    border: 1px solid #ddd;
+                    margin-right: 10px;
+                }
+                a{
+                    float: right;
+                    margin-top: 3px;
+                    height: 25px;
+                    width: 50px;
+                    text-align: center;
+                    line-height: 24px;
+                    border-radius: 4px;
+                    font-size: 13px;
+                    border: 1px solid #ccc;
+                    color: #ccc;
+                    &.active{
+                        color: #fff;    
+                        background: @baseColor;
+                        border-color: @baseColor;
+                    }
+                }
             }
-            .bit-video:before{
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                top: 0;
-                margin: auto;
-                width: 40px;
-                height: 40px;
-                font-size: 40px;
-                line-height: 40px;
-                color: #fff;
-            }
-            .bit-content{
-                text-align: right; 
-            }
-            .content-text{
-                margin-bottom: 24px;
-            }
-            .bit-time{
+            .card-title{
                 font-weight: bold;
+                padding-bottom: 3px;
             }
-            .bit-card-ft{
-                text-align: left;
-                clear: both;
+            .card-desc{
+                box-sizing: border-box;
+                padding: 0px 0;
+                line-height: 20px;
+                padding-bottom: 2px;
+            }
+            .text-box{
+                max-height: inherit;
+                -webkit-line-clamp: 12;
+            }
+            .handle{
+                color: #ccc;
+                line-height: 30px;
+                overflow: hidden;
+                i{
+                    float: right;
+                    margin-right: 10px;
+                    font-size: 20px;
+                }
             }
         }
     }
@@ -835,11 +856,10 @@
         width: 100%;
         .filter{
             background: #fff;
-            margin-top: 86px;
-            height: 40px;
+            margin-top: 46px;
+            padding-bottom: 20px;
             p{
-                padding: 0 15px 0;
-                line-height: 40px;
+                padding: 15px 15px 0;
             }
             .label{
                 margin-right: 20px;
@@ -850,53 +870,6 @@
                 vertical-align: middle;
                 margin: 0 3px;
             }
-        }
-        .data_{
-            line-height: 40px;
-            color: #fff;
-            font-weight: bold;
-        }
-        .date-custom{
-            height: 20px;
-            background: #fff;
-            padding: 5px;
-            margin: 5px;
-        }
-    }
-    .box2{
-        position: relative;
-        overflow: hidden;
-        text-align: center;
-        line-height: 40px;
-        color: #fff;
-        .ability-item{
-            float: left;
-            width: 80px;
-        }
-    }
-    .city-box{
-        line-height: 40px;
-        // padding-bottom: 0 !important;
-        height: 40px;
-        box-sizing: border-box;
-        overflow: hidden;
-        >div{
-            overflow: auto;
-            height: 50px;
-            color: #fff;
-            padding-right: 10px;
-            span{
-                padding-left: 10px;
-            }
-        }
-    }
-</style>
-<style lang="less">
-    .page .date-custom .weui-cell__ft{
-        padding-right: 0;
-        text-align: center;
-        &:after{
-            display: none;
         }
     }
 </style>

@@ -6,10 +6,11 @@
                 <img src="../assets/logo.png" alt="">
             </div>
             <group gutter='0'>
-                <cell class="cell" :title="'当前版本：v' + version"></cell>
-                <cell class="cell" title="赏个好评呗"></cell>
+                <cell class="cell" :title="'当前版本：v1.0'"></cell>
             </group>
-            <router-link class="tip" to="./agreement_terms">用户协议及使用条款</router-link>
+            <div class="tip">
+                <router-link to="./agreement_terms">用户协议</router-link>及<router-link to="./privacyPolicy">隐私政策</router-link>
+            </div>
         </div>
 
     </div>
@@ -79,6 +80,9 @@
             width: 100%;
             text-align: center;
             color: inherit;
+            a{
+                color: @baseColor;
+            }
         }
     }
 </style>

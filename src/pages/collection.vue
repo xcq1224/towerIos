@@ -2,39 +2,44 @@
     <div class="page"> 
         <x-header :left-options="{backText: ''}">我的收藏</x-header>
         <div class="main">
-            <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
-                <div class="user-info">
-                    <span @click.stop="toHomepage(item.towerUserId)"><img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}<i class='iconfont icon-zhongfu'></i></span>
-                    <a v-show="item.follow != 1" class="active" @click.stop="follow(item.towerUserId, index)">+关注</a>
-                    <a v-show="item.follow == 1" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
-                </div>
-                <div v-show="item.title" class="card-title text-ellipsis">{{item.title}}</div>
-                <div v-show="item.content && item.contentType != 6" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
-                <div v-if="item.contentType == 2 || item.contentType == 3" class="video-box">
-                    <img :src="item.videoImg" class="video-img" alt="">
-                    <span class="play-btn iconfont icon-bofang"  @click.stop="openVideo(item.videoUrl, item.videoImg)"></span>
-                </div>
-                <!-- 图片 -->
-                <div v-if="item.imgUrls.length" class="thumbnail-box">
-                    <div v-if="item.imgUrls.length > 1" class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
-                        v-for="(imgItem, imgIndex) in item.imgUrls" :key="imgIndex" @click.stop="viewPicture(item.imgUrls, imgIndex)"></div>
-                    <div v-if="item.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(item.imgUrls, 0)">
-                        <img :src="item.imgUrls[0]" alt="">
+            <div v-if="contentList.length">
+                <div class="hot-card" @click="toDetail(item.towerContentId, item.contentType)" v-for="(item, index) in contentList" :key="index">
+                    <div class="user-info">
+                        <span @click.stop="toHomepage(item.towerUserId)"><img :src="item.iconUrl" width="28" height='28' alt="">{{item.name}}<i class='iconfont icon-zhongfu'></i></span>
+                        <a v-show="item.follow != 1" class="active" @click.stop="follow(item.towerUserId, index)">+关注</a>
+                        <a v-show="item.follow == 1" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
                     </div>
+                    <div v-show="item.title" class="card-title text-ellipsis">{{item.title}}</div>
+                    <div v-show="item.content && item.contentType != 6" class="card-desc" :class="item.contentType == '0'? 'text-ellipsis12':'text-ellipsis2'">{{item.content}}</div>
+                    <div v-if="item.videoUrl" class="video-box" :style="{backgroundImage: 'url(' + item.videoImg + ')' }">
+                        <span class="play-btn iconfont icon-bofang"  @click.stop="openVideo(item.videoUrl, item.videoImg, item.contentType, item.price, item.buy)"></span>
+                    </div>
+                    <!-- 图片 -->
+                    <div v-if="item.imgUrls.length" class="thumbnail-box">
+                        <div v-if="item.imgUrls.length > 1" class="thumbnail" :style="{backgroundImage: 'url(' + imgItem + ')' }" 
+                            v-for="(imgItem, imgIndex) in item.imgUrls" :key="imgIndex" @click.stop="viewPicture(item.imgUrls, imgIndex)"></div>
+                        <div v-if="item.imgUrls.length == 1" class="thumbnail-one" @click.stop="viewPicture(item.imgUrls, 0)">
+                            <img :src="item.imgUrls[0]" alt="">
+                        </div>
+                    </div>
+                    <div style="overflow: hidden;">
+                        {{item.position}}
+                        <img class="fr" v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="20"/>
+                        <img class="fr" v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="20"/>
+                        <img class="fr" v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="20"/>
+                    </div>
+                    <div class="handle">{{longTime(item.createDate)}}
+                        <i v-show="item.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(item.towerContentId, index)"></i>
+                        <i v-show="item.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(item.towerContentId, index)"></i>
+                        <i class="iconfont icon-pinglun" @click.stop="toDetail(item.towerContentId, item.contentType, 1)"></i>
+                        <i v-show="item.collection != 1" class="iconfont icon-ego-heart" @click.stop="collection(item.towerContentId, index)"></i>
+                        <i v-show="item.collection == 1" class="iconfont icon-guanzhu text-red" @click.stop="no_collection(item.towerContentId, index)"></i>
+                    </div> 
                 </div>
-                <div style="overflow: hidden;">
-                    {{item.position}}
-                    <img class="fr" v-if="item.scene != '0' && item.scene" :src="'/static/scene' + item.scene + '.png'" width="20"/>
-                    <img class="fr" v-if="item.weather != '0' && item.weather" :src="'/static/weather' + item.weather + '.png'" width="20"/>
-                    <img class="fr" v-if="item.mood != '0' && item.mood" :src="'/static/mood' + item.mood + '.png'" width="20"/>
-                </div>
-                <div class="handle">{{longTime(item.createDate)}}
-                    <i v-show="item.praise != 1" class="iconfont icon-dianzan1" @click.stop="praise(item.towerContentId, index)"></i>
-                    <i v-show="item.praise == 1" class="iconfont icon-yijin13-zan text-red" @click.stop="no_praise(item.towerContentId, index)"></i>
-                    <i class="iconfont icon-pinglun" @click.stop="toDetail(item.towerContentId, item.contentType, 1)"></i>
-                    <i v-show="item.collection != 1" class="iconfont icon-ego-heart" @click.stop="collection(item.towerContentId, index)"></i>
-                    <i v-show="item.collection == 1" class="iconfont icon-guanzhu text-red" @click.stop="no_collection(item.towerContentId, index)"></i>
-                </div> 
+            </div>
+            <div v-else class="empty">
+                <p><i class="icon-empty iconfont"></i></p>
+                <p style="position: relative; top: -40px;">您还没有收藏哦~</p>
             </div>
         </div>
 
@@ -191,6 +196,20 @@
                 float: right;
                 margin-right: 10px;
                 font-size: 20px;
+            }
+        }
+    }
+    .video-box{
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+    .empty{
+        p{
+            text-align: center;
+            color: #ccc;
+            i{
+                font-size: 160px;
             }
         }
     }

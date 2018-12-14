@@ -12,6 +12,9 @@ import VueAwesomeSwiper from 'vue-awesome-swiper'
 import Bridge from './config/bridge.js'
 //  定位
 import "./js/geolocation.min"
+//  ios拍照旋转
+import EXIF from 'exif-js'
+window.EXIF = EXIF
 
 //  富文本编辑器
 import initRichText from './js/edit';  
@@ -26,6 +29,7 @@ Vue.use(VideoPlayer);
 FastClick.attach(document.body)
 
 // axios.defaults.withCredentials = true
+axios.defaults.timeout = 6000;
 Vue.prototype.$axios = axios
 Vue.config.productionTip = false
 Vue.use(ConfirmPlugin)
@@ -78,6 +82,18 @@ window.alipayResult = function(res){
 Vue.prototype.login = function(){
     window.webkit.messageHandlers.login.postMessage(null);
 }
+//  购买塔兮币
+Vue.prototype.buyTaXiCoin = function(towerUserId, coinId){
+    let params = {
+        "towerUserId": towerUserId,
+        "coinId": coinId
+    }
+    window.webkit.messageHandlers.buyTaXiCoin.postMessage(params);
+}
+//  获取相片
+Vue.prototype.camera = function(){
+    window.webkit.messageHandlers.camera.postMessage(null);
+}
 //  支付
 Vue.prototype.alipay = function(towerUserId, towerContentId, contentType){
     let params = {
@@ -109,6 +125,21 @@ Vue.prototype.shareResume = function(title, descr, thumbImage, webpageUrl){
     window.webkit.messageHandlers.share.postMessage(params);
 }
 
+//  内容格式化
+Vue.prototype.getFormatContent = function(content){
+    content = content.replace(/\r/g, "<br/>");
+    var regexp = /(((https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/ig;
+    // var regexp = /(http:\/\/|https:\/\/)((w|=|?|.|\/|&|-)+)/g;
+    // var regexp = /(https:\/\/[\w.\/]+)(?![^<]+>)/gi;
+    content = content.replace(regexp,function($url){
+        return "<a class='text-base' href='" + $url + "' target='_blank'>" + $url + "</a>";
+    });
+    // console.log(content)
+    // content = content.replace(/&lt;/g, "<")
+    // content = content.replace(/&gt;/g, ">")
+    this.$refs.content.innerHTML = content
+},
+
 //  跳转页面
 Vue.prototype.goTo = function(url){
     if(this.$store.state.towerUserId){
@@ -121,6 +152,14 @@ Vue.prototype.goTo = function(url){
 //  获取数组长度
 Vue.prototype.length = function(arr){
     return arr.length
+}
+//  字符串转数组
+Vue.prototype.toArray = function(str){
+    if(str){
+        return str.split(",")
+    }else{
+        return []
+    }
 }
 //  成功提示
 Vue.prototype.toastSuccess = function(text, width){
@@ -145,7 +184,11 @@ Vue.prototype.toastFail = function(text, width){
 }
 
 //  打开视频弹窗
-Vue.prototype.openVideo = function(videoUrl, videoImg){
+Vue.prototype.openVideo = function(videoUrl, videoImg, contentType, price, buy){
+    if(contentType == 3 && price > 0 && buy != 1){
+        this.toastFail("该视频需要先购买才能播放！", '200px')
+        return
+    }
     this.$store.state.showVideo = true
     this.$store.state.videoUrl = videoUrl
     this.$store.state.videoImg = videoImg
@@ -166,8 +209,11 @@ Vue.prototype.toDetail = function(id, type, status){
     // }else{
     //     this.$router.push('./bit_detail?id=' + id + str)
     // }
+    if(type == 3){
+        str = str + '&title=小课'
+    }
     if(type == 6){
-        this.$router.push('./article_detail?id=' + id + str)
+        this.$router.push('./bit_detail?id=' + id + str)
     }else{
         this.$router.push('./bit_detail?id=' + id + str)
     }
@@ -242,7 +288,6 @@ Vue.prototype.formatDate = function(time, fmt){
 //  不用了
 Vue.prototype.post = function(url, params, success, error){
     if(this.$store.state.towerUserId){
-        console.log(this.$store.state.towerUserId)
         params.append('towerUserId', this.$store.state.towerUserId)
     }
     this.$axios.post(url, params).then(res => {
@@ -278,8 +323,9 @@ Vue.prototype.post = function(url, params, success, error){
 Vue.prototype.$post = function(action, params, success, error){
     let url = 'http://towerxi.com/app/account!' + action + '.action'
     if(this.$store.state.towerUserId){
-        console.log(this.$store.state.towerUserId)
-        params.append('towerUserId', this.$store.state.towerUserId)
+        if(!params.has("towerUserId")){
+            params.append('towerUserId', this.$store.state.towerUserId)
+        }
     }
     this.$axios.post(url, params).then(res => {
         this.$vux.loading.hide()

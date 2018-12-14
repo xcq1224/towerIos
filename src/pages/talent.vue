@@ -1,6 +1,10 @@
 <template>
     <div class="page"> 
-        <x-header class="pst" :left-options="{backText: ''}">达人</x-header>
+        <x-header class="pst" :left-options="{backText: ''}">达人
+            <div slot="right" @click="search">
+                <x-icon type="ios-search-strong" size="28" style="fill: #fff;margin-top: -5px;"></x-icon>
+            </div>
+        </x-header>
         <div class="subnav pst">
             <div>
                 <div class="subnav-item" :class="greatManType?'':'active'" @click="getgreatmanlist(0)">职业大咖</div>
@@ -10,22 +14,43 @@
             </div>
         </div>
         <div class="main">
-            <div class="talent-card" @click="toHomepage(item.towerUserId)" v-for="(item, index) in towerUserListShow" :key="index">
-                <img :src="item.iconUrl" alt="">
-                <p class="title">{{item.name}}</p>
-                <p>{{item.university}}</p>
-                <p>{{item.followNum}}人关注</p>
-                <a v-show="item.follow != 1" class="active attention" @click.stop="follow(item.towerUserId, index)">+关注</a>
-                <a v-show="item.follow == 1" class="attention" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
-            </div>
+            <scroller lock-x height="100%" ref="scrollerBottom">
+                <div>
+                    <div class="talent-card" @click="toHomepage(item.towerUserId)" v-for="(item, index) in towerUserListShow" :key="index">
+                        <img :src="item.iconUrl" alt="">
+                        <p class="title">{{item.name}}</p>
+                        <p>{{item.university}}</p>
+                        <p>{{item.followNum}}人关注</p>
+                        <a v-show="item.follow != 1" class="active attention" @click.stop="follow(item.towerUserId, index)">+关注</a>
+                        <a v-show="item.follow == 1" class="attention" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
+                    </div>
+                </div>
+            </scroller>
         </div>
-
+        <search
+            v-show="is_search"
+            v-model="value"
+            @on-submit="searchResult"
+            placeholder="请输入用户昵称"
+            @on-cancel="onCancel"
+            ref="search" style="position:absolute;top:0;">
+            <div slot="" class="search-result-box">
+                <div class="talent-card" @click="toHomepage(item.towerUserId)" v-for="(item, index) in resultList" :key="index">
+                    <img :src="item.iconUrl" alt="">
+                    <p class="title">{{item.name}}</p>
+                    <p>{{item.university}}</p>
+                    <p>{{item.followNum}}人关注</p>
+                    <a v-show="item.follow != 1" class="active attention" @click.stop="follow(item.towerUserId, index)">+关注</a>
+                    <a v-show="item.follow == 1" class="attention" @click.stop="no_follow(item.towerUserId, index)">已关注</a>
+                </div>
+            </div>
+        </search>
     </div>
 </template>
 
 <script>
     import { XHeader, Actionsheet, TransferDom, ButtonTab, ButtonTabItem } from 'vux'
-    import { Tab, TabItem, Sticky, Divider, XButton } from 'vux'
+    import { Tab, TabItem, Sticky, Divider, XButton, Search, Scroller } from 'vux'
     export default {
         components: {
             XHeader,
@@ -37,6 +62,8 @@
             Sticky,
             Divider,
             XButton,
+            Search,
+            Scroller,
         },
         data () {
             return {
@@ -52,9 +79,15 @@
                 isShow2: false,
                 chosenTop: 0,       //  精选tab的scrollTop高度
 
+                // 搜索
+                is_search: false,
+                value: '',          //  搜索内容
+                resultList: [],         //  搜索结果
+                isEmpty: false,     //  是否为空
             }
         },
         activated(){
+            this.is_search = false
             this.$vux.loading.show()
             this.getgreatmanlist(this.greatManType)
         },
@@ -62,6 +95,9 @@
 
             //  根据greatManType获取对应达人列表
             getgreatmanlist(index){
+                this.$nextTick(() => {
+                    this.$refs.scrollerBottom.reset({top: 0})
+                })
                 this.greatManType = index
                 let params = new FormData()
                 params.append("greatManType", this.greatManType)
@@ -91,6 +127,26 @@
                 this.$post("no_follow", params, (data) => {
                     this.towerUserListShow[index].follow = '0'
                 })
+            },
+        /****************************查询********************* */
+            search(){
+                this.is_search = true
+                setTimeout(() => {
+                    this.$refs.search.setFocus()
+                },0)
+            },
+            onCancel () {
+                this.is_search = false
+                this.resultList = []
+            },
+            searchResult(val){
+                if(val){
+                    let params = new FormData()
+                    params.append("keyword", val)
+                    this.$post("searchman", params, (data) => {
+                        this.resultList = data.towerUserList
+                    })
+                }
             },
         },
     }
@@ -191,6 +247,13 @@
             right: 10px;
             top: 4px;
         }
+    }
+    .search-result-box{
+        height: 100vh;
+        background: #fff;
+        padding-bottom: 44px;
+        box-sizing: border-box;
+        overflow: auto;
     }
 </style>
 

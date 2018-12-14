@@ -119,12 +119,12 @@ export default {
         this.contentShowList[index].isError = true
         this.contentShowList[index].videoImg = null
     },
-    openVideo(videoUrl, videoImg, index){
-        this.videoPlayIndex = index
-        this.videoUrl = videoUrl
-        this.videoImg = videoImg
-        this.showVideo = true
-    },
+    // openVideo(videoUrl, videoImg, index){
+    //     this.videoPlayIndex = index
+    //     this.videoUrl = videoUrl
+    //     this.videoImg = videoImg
+    //     this.showVideo = true
+    // },
     //  打开视频弹框
     openVideoModal(){
         setTimeout(() => {
