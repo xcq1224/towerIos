@@ -30,66 +30,12 @@
         <popup class="new-more-handle-box" v-model="showMore" :is-transparent="true" :show-mask="false" @on-show="zIndex = 500" @on-hide="zIndex = -1">
             <div class="new-more-handle" @click="showMore = false">
                 <!-- <div class="handle-item handle-item1">服务</div> -->
-                <div class="handle-item handle-item2" @click="handleClick(0)">炫技</div>
-                <div class="handle-item handle-item3" @click="handleClick(2)">需求</div>
+                <div class="handle-item handle-item2" @click="goTo('./publish_shot')">炫技</div>
+                <div class="handle-item handle-item3" @click="goTo('./publish_shot')">需求</div>
                 <!-- <div class="handle-item handle-item4">文章</div> -->
-                <div class="handle-item5" @click="handleClick(1)">拍摄</div>
-            </div>
+                <div class="handle-item5" @click="goTo('./publish_shot')">拍摄</div>
+            </div> 
         </popup>
-        <!-- <popup v-model="showMore">
-            <div class="more-handle">
-                <div class="more-handle-body">
-                    <div @click="publish0">
-                        <span style="background: #f66;"><i class="iconfont icon-hetong2"></i></span>
-                        <p>文字</p>
-                    </div>
-                    <div @click="camera">
-                        <span style="background: #fbce77;"><i class="iconfont icon-paizhao"></i></span>
-                        <p>视频</p>
-                        <input class="open-camera" ref="uploadVideo" @change="uploadVideo" v-show="false" type="file" accept="video/*" capture="camera">
-                    </div>
-                    <div @click="camera">
-                        <span style="background: #86df79;"><i class="iconfont icon-xiangce"></i></span>
-                        <p>拍照</p>
-                        <input ref="uploadPicture" @change="uploadPicture" v-show="false" type="file" accept="image/*" capture="camera">  
-                    </div>
-                    <div @click="uploadClick('uploadVideo')">
-                        <span style="background: #fbce77;"><i class="iconfont icon-paizhao"></i></span>
-                        <p>视频</p>
-                        <input class="open-camera" ref="uploadVideo" @change="uploadVideo" v-show="false" type="file" accept="video/*" capture="camera">
-                    </div>
-                    <div @click="uploadClick('uploadPicture')">
-                        <span style="background: #86df79;"><i class="iconfont icon-xiangce"></i></span>
-                        <p>拍照</p>
-                        <input ref="uploadPicture" @change="uploadPicture" v-show="false" type="file" accept="image/*" capture="camera">  
-                    </div>
-                    <div @click="uploadClick('uploadAlbum')">
-                        <span style="background: #86df79;"><i class="iconfont icon-xiangce"></i></span>
-                        <p>相册</p>
-                    </div>
-                    <div @click="publish4(4)">
-                        <span style="background: #b5e1fe;"><i class="iconfont icon-jinengtechang--"></i></span>
-                        <p>技能</p>
-                    </div>
-                    <div @click="publish4(5)">
-                        <span style="background: #0084ff;"><i class="iconfont icon-xiangmuxuqiu"></i></span>
-                        <p>需求</p>
-                    </div>
-                    <div @click="publishCourse(0)">
-                        <span style="background: #cc66cc;"><i class="iconfont icon-kecheng-"></i></span>
-                        <p>小课</p>
-                    </div>
-                    <div @click="goTo('./publish_article')">
-                        <span style="background: #cc66cc;"><i class="iconfont icon-kecheng-"></i></span>
-                        <p>文章</p>
-                    </div>
-                    <p class="copyText" v-show="false" ref="copy" data-clipboard-text="yunshangtaxi@163.com" @click="copy"></p>
-                </div>
-                <div class="more-handle-footer">
-                    <span @click="showMore=false"><i class="iconfont icon-butongguo"></i></span>
-                </div>
-            </div>
-        </popup> -->
         <!--发布文字、图片-->
         <popup v-model="show1" height="100%" @on-show="openShow1" @on-hide="closeShow1" @click.native="tagIndex = 0">
             <div class="main">
@@ -353,12 +299,6 @@ export default {
         }
     },
     methods: {
-        handleClick(index){
-            console.log(1111111)
-            if(index == 0){
-                console.log(0)
-            }
-        },
 
         //  文件流转化为url
         file2path(files){

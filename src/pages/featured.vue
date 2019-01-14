@@ -1,76 +1,155 @@
 <template>
     <div class="page"> 
         <!-- <x-header class="pst" :left-options="{backText: ''}">小课</x-header> -->
-        <x-header class="pst" title="slot:overwrite-title" :left-options="{backText: ''}">
-            <div slot="overwrite-title">
-                <a>炫技</a>
-                <a>需求</a>
+        <x-header class="pst header" title="slot:overwrite-title" :left-options="{backText: ''}">
+            <div class="menu" slot="overwrite-title">
+                <span :class="tabIndex == '1' ? 'active' : ''" @click="tabIndex='1'">炫技</span>
+                <span :class="tabIndex == '2' ? 'active' : ''" @click="tabIndex='2'">需求</span>
             </div>
         </x-header>
-        <tab class="pst" :line-width=2 custom-bar-width="50%" v-model="skillType">
-            <tab-item class="vux-center" :selected="skillType == 0" @click.native="slideTo(0)">小课</tab-item>
-            <tab-item class="vux-center" :selected="skillType == 2" @click.native="slideTo(1)">需求</tab-item>
-        </tab>
-        <div class="main">
-            <swiper v-model="skillType" ref="mySwiper" :show-dots="false" style="height: 100%;" @slideChange="changeTab">
-                <swiper-slide>
-                    <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(0)"
-                        use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
-                        lock-x ref="scrollerBottom0" height="100%">
-                        <div v-show="isEmpty0">
-                            <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList0" :key="index">
-                                <img :src="item.videoImg || item.imgUrls[0]">
-                                <p class="title">{{item.title}}</p>
-                                <p>{{item.name}}</p>
-                                <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+        <div v-show="tabIndex == 1">
+            <tab class="pst" :line-width=2 custom-bar-width="60%" v-model="skillType">
+                <tab-item class="vux-center" :selected="skillType == 0" @click.native="slideTo(0)">推荐</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 1" @click.native="slideTo(1)">小课</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 2" @click.native="slideTo(2)">男士穿搭</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 3" @click.native="slideTo(3)">健身</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 4" @click.native="slideTo(4)">数码</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 5" @click.native="slideTo(5)">影视</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 6" @click.native="slideTo(6)">旅行</tab-item>
+            </tab>
+            <div class="main">
+                <swiper v-model="skillType" ref="mySwiper" :show-dots="false" style="height: 100%;" @slideChange="changeTab">
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(0)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
+                            lock-x ref="scrollerBottom0" height="-86">
+                            <div v-show="isEmpty0">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList0" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p>{{item.name}}</p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+                                </div>
                             </div>
-                        </div>
-                        <div v-show="!isEmpty0">
-                            <div style="text-align: center;">暂无数据</div>
-                        </div>
-                    </scroller>
-                </swiper-slide>
-                <!-- <swiper-slide>
-                    <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(1)"
-                        use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(1)"
-                        lock-x ref="scrollerBottom1" height="100%">
-                        <div v-show="isEmpty1">
-                            <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList1" :key="index">
-                                <img :src="item.videoImg || item.imgUrls[0]">
-                                <p class="title">{{item.title}}</p>
-                                <p style="overflow: hidden;">{{item.name}}
-                                    <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
-                                        text-align: center;border-radius: 4px;">认识一下</a>
-                                </p>
-                                <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+                            <div v-show="!isEmpty0">
+                                <div style="text-align: center;">暂无数据</div>
                             </div>
-                        </div>
-                        <div v-show="!isEmpty1">
-                            <div style="text-align: center;">暂无数据</div>
-                        </div>
-                    </scroller>
-                </swiper-slide> -->
-                <swiper-slide>
-                    <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(1)"
-                        use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(1)"
-                        lock-x ref="scrollerBottom1" height="100%">
-                        <div v-show="isEmpty1">
-                            <div class="chosen-card" @click="goPay(item.towerContentId, 1)" v-for="(item, index) in skillList1" :key="index">
-                                <img :src="item.videoImg || item.imgUrls[0]">
-                                <p class="title">{{item.title}}</p>
-                                <p>{{item.name}}
-                                    <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
-                                        text-align: center;border-radius: 4px;">认识一下</a>
-                                </p>
-                                <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">￥{{item.price}}</span></p>
+                        </scroller>
+                    </swiper-slide>
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(1)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(1)"
+                            lock-x ref="scrollerBottom1" height="100%">
+                            <div v-show="isEmpty1">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList1" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p style="overflow: hidden;">{{item.name}}
+                                        <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
+                                            text-align: center;border-radius: 4px;">认识一下</a>
+                                    </p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+                                </div>
                             </div>
-                        </div>
-                        <div v-show="!isEmpty1">
-                            <div style="text-align: center;">暂无数据</div>
-                        </div>
-                    </scroller>
-                </swiper-slide>
-            </swiper>
+                            <div v-show="!isEmpty1">
+                                <div style="text-align: center;">暂无数据</div>
+                            </div>
+                        </scroller>
+                    </swiper-slide>
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(2)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(2)"
+                            lock-x ref="scrollerBottom1" height="100%">
+                            <div v-show="isEmpty1">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 1)" v-for="(item, index) in skillList1" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p>{{item.name}}
+                                        <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
+                                            text-align: center;border-radius: 4px;">认识一下</a>
+                                    </p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">￥{{item.price}}</span></p>
+                                </div>
+                            </div>
+                            <div v-show="!isEmpty1">
+                                <div style="text-align: center;">暂无数据</div>
+                            </div>
+                        </scroller>
+                    </swiper-slide>
+                </swiper>
+            </div>
+        </div>
+        <div v-show="tabIndex == 2">
+            <tab class="pst" :line-width=2 custom-bar-width="70%" v-model="skillType">
+                <tab-item class="vux-center" :selected="skillType == 0" @click.native="slideTo(0)">推荐</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 1" @click.native="slideTo(1)">小课</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 2" @click.native="slideTo(2)">男士穿搭</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 3" @click.native="slideTo(3)">健身</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 4" @click.native="slideTo(4)">数码</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 5" @click.native="slideTo(5)">影视</tab-item>
+                <tab-item class="vux-center" :selected="skillType == 6" @click.native="slideTo(6)">旅行</tab-item>
+            </tab>
+            <div class="main">
+                <swiper v-model="skillType" ref="mySwiper" :show-dots="false" style="height: 100%;" @slideChange="changeTab">
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(0)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(0)"
+                            lock-x ref="scrollerBottom0" height="-86">
+                            <div v-show="isEmpty0">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList0" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p>{{item.name}}</p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+                                </div>
+                            </div>
+                            <div v-show="!isEmpty0">
+                                <div style="text-align: center;">暂无数据</div>
+                            </div>
+                        </scroller>
+                    </swiper-slide>
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(1)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(1)"
+                            lock-x ref="scrollerBottom1" height="100%">
+                            <div v-show="isEmpty1">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 0)" v-for="(item, index) in skillList1" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p style="overflow: hidden;">{{item.name}}
+                                        <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
+                                            text-align: center;border-radius: 4px;">认识一下</a>
+                                    </p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">{{item.price}}塔兮币</span></p>
+                                </div>
+                            </div>
+                            <div v-show="!isEmpty1">
+                                <div style="text-align: center;">暂无数据</div>
+                            </div>
+                        </scroller>
+                    </swiper-slide>
+                    <swiper-slide>
+                        <scroller use-pullup :pullup-config="pullupDefaultConfig" @on-pullup-loading="loadMore(2)"
+                            use-pulldown :pulldown-config="pulldownDefaultConfig" @on-pulldown-loading="refresh(2)"
+                            lock-x ref="scrollerBottom1" height="100%">
+                            <div v-show="isEmpty1">
+                                <div class="chosen-card" @click="goPay(item.towerContentId, 1)" v-for="(item, index) in skillList1" :key="index">
+                                    <img :src="item.videoImg || item.imgUrls[0]">
+                                    <p class="title">{{item.title}}</p>
+                                    <p>{{item.name}}
+                                        <a @click.stop="toHomepage(item.towerUserId)" v-show="item.follow != 1" class="active text-base fr" style="width:64px;border: 1px solid #0084ff;
+                                            text-align: center;border-radius: 4px;">认识一下</a>
+                                    </p>
+                                    <p><span class="num">{{item.learnNum}}</span>人在学<span class="sprice">￥{{item.price}}</span></p>
+                                </div>
+                            </div>
+                            <div v-show="!isEmpty1">
+                                <div style="text-align: center;">暂无数据</div>
+                            </div>
+                        </scroller>
+                    </swiper-slide>
+                </swiper>
+            </div>
         </div>
     </div>
 </template>
@@ -117,6 +196,7 @@
         },
         data () {
             return {
+                tabIndex: '1',
                 //  精选
                 skillType: 0,          //   技能类型
                 pageNum0: 1,            //  小课页数
@@ -242,6 +322,25 @@
 
 <style lang="less" scoped>
     @import "../style/base_color.less";
+    .header{
+        .menu{
+            display: flex;
+            margin-top: 8px;
+            span{
+                color: #fff;
+                flex: 1;
+                text-align: center;
+                &.active:after{
+                    display: block;
+                    content: '';
+                    width: 40px;
+                    border-bottom: 2px solid #fff;
+                    position: relative;
+                    margin: 2px auto;
+                }
+            }
+        }
+    }
     .subnav{
         height: 34px;
         padding-top: 6px;
@@ -264,8 +363,11 @@
             }
         }
     }
+    .scrollable .vux-tab-item{
+        flex: 0 0 15%;
+    }
     .main{
-        padding-top: 46px;
+        padding-top: 86px;
         background: #f2f2f2;
         font-size: 12px;
         .vux-slider{

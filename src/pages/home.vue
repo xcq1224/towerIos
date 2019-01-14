@@ -76,20 +76,8 @@
                 <div class="hotSearch">
                     <p class="title">热门搜索</p>
                     <div>
-                        <a><i class="iconfont icon-remen"></i>流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>大鹅</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
-                        <a>2019流行色</a>
+                        <!-- <a><i class="iconfont icon-remen"></i>流行色</a> -->
+                        <a v-for="item in hotList" :key="item.id">{{item.keyword}}</a>
                     </div>
                 </div>
             </div>
@@ -138,13 +126,6 @@
             Cell,
             LoadMore,
         },
-        mounted() {
-            this.$nextTick(() => {
-                this.$refs.scrollerBottom.reset({top: 0})
-            })
-            this.$vux.loading.show()
-            this.loadMore()
-        },
         data () {
             return {
             /******************************二级tab的显示与隐藏************************* */
@@ -153,6 +134,7 @@
                 showSubTab: true,
                 //  search
                 results: [],
+                hotList: [],            //  热门词
                 searchList: [{
                   index: 1,
                   list: [{'title': 'sdgjksjdg', 'content': 'atqrqw'},{'title': 'sdgjksjdg', 'content': 'atqrqw'}]
@@ -192,6 +174,14 @@
                 showSearch: false,      //  是否显示搜索框
             }
         },
+        mounted() {
+            this.$nextTick(() => {
+                this.$refs.scrollerBottom.reset({top: 0})
+            })
+            this.$vux.loading.show()
+            this.loadMore()
+            this.getHotKey()
+        },
         methods: {
             /****************************搜索框*********************************** */
             //  弹出搜索框时聚焦
@@ -199,6 +189,13 @@
                 setTimeout(() => {
                     this.$refs.search.setFocus()
                 }, 100)
+            },
+            //  获取热门关键词
+            getHotKey(){
+                let params = new FormData()
+                this.$post("getHotSearch", params, (data) => {
+                    this.hotList = data.hotList
+                })
             },
 
 
